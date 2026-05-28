@@ -481,6 +481,7 @@ async function generatePersonas(){
   for(let i=0;i<count;i++){
     showLoad(`Generating persona ${i+1} of ${count}...`);
     const existingSegs=personas.map(p=>p.segment).join(', ');
+    const usedNames=personas.map(p=>p.name).join(', ');
     const imgNote=S_imgs.length>0
       ?`\nPRODUCT IMAGES: ${S_imgs.length} image(s) of the product have been provided. When crafting this persona's background, JTBD, and quote, assume they have seen or interacted with this product visually.`
       :'';
@@ -493,7 +494,7 @@ ${data}
 ${existingSegs?`\nSegments already created — make this persona different: ${existingSegs}`:''}
 Persona number: ${i+1} of ${count}${imgNote}
 
-NAME RULES: Use culturally diverse, realistic names from varied backgrounds (American, Latino/a, Asian, European, African, Middle Eastern, etc.). Every persona MUST have a completely unique first AND last name — absolutely no shared surnames or first names across any personas. Make names feel real and specific, not generic (avoid "John Smith", "Jane Doe", etc.).
+NAME RULES: Use culturally diverse, realistic names from varied backgrounds (American, Latino/a, Asian, European, African, Middle Eastern, etc.). Every persona MUST have a completely unique first AND last name — absolutely no shared surnames or first names across any personas. Make names feel real and specific, not generic (avoid "John Smith", "Jane Doe", etc.).${usedNames?`\nNAMES ALREADY USED (do NOT reuse any part of these, not even the first name): ${usedNames}`:''}
 
 IMPORTANT: Return ONLY the JSON object, nothing else. No explanation, no markdown, no code fences. Start with { and end with }
 
@@ -654,7 +655,7 @@ PROFILE:
 ${hist.length?`CONVERSATION HISTORY:\n${hist.map(m=>`${m.role==='user'?'Interviewer':p.name}: ${m.content}`).join('\n\n')}\n\n`:''}INTERVIEWER QUESTION:
 ${q}
 
-Respond AS ${p.name} would — in first person, authentically, using language and vocabulary consistent with your profile. Include personal details, opinions, and life context. Be natural, spontaneous, and human. You may include hesitations or nuance. DO NOT break character. DO NOT reveal you are an AI. Respond in 2–4 paragraphs.`;
+Respond AS ${p.name} would — in first person, authentically, using language and vocabulary consistent with your profile. Include personal details, opinions, and life context. Be natural, spontaneous, and human. You may include hesitations or nuance. DO NOT break character. DO NOT reveal you are an AI. Keep it concise: 1–2 short paragraphs maximum.`;
   try{
     const ans=await callClaude(prompt, S_imgs);
     S.interviews[id].push({role:'persona',content:ans});
@@ -676,7 +677,23 @@ function renderSynthesisStep(){
   document.getElementById('syn-bar').innerHTML=interviewed.length>0
     ?interviewed.map(p=>`<div class="syn-chip">${p.avatar} <strong>${p.name.split(' ')[0]}</strong> <span style="color:var(--text-2)">${S.interviews[p.id].filter(m=>m.role==='user').length} questions</span></div>`).join('')
     :'<span style="font-size:12px;color:var(--text-2)">No interviews conducted</span>';
-  if(S.synthesis)renderSynthesisHtml(S.synthesis);
+  if(S.synthesis){
+    renderSynthesisHtml(S.synthesis);
+  } else if(interviewed.length>0){
+    document.getElementById('synthesis-out').innerHTML=`
+      <div class="empty">
+        <div class="ei">✅</div>
+        <div class="et">${interviewed.length} interview${interviewed.length>1?'s':''} ready to synthesize</div>
+        <div class="es">Click <strong>Analyze &amp; Synthesize</strong> below to generate your insight report</div>
+      </div>`;
+  } else {
+    document.getElementById('synthesis-out').innerHTML=`
+      <div class="empty">
+        <div class="ei">🔬</div>
+        <div class="et">No interviews conducted yet</div>
+        <div class="es">Complete at least one interview in Step 3 to enable synthesis</div>
+      </div>`;
+  }
   updateSynBar();
 }
 
