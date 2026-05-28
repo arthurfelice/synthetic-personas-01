@@ -160,6 +160,27 @@ textarea:focus,input:focus,select:focus{border-color:var(--accent);box-shadow:0 
 .pw-err{font-size:12px;color:#dc2626;margin-top:8px;min-height:16px}
 .pw-btn{width:100%;margin-top:16px;padding:10px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background 0.15s}
 .pw-btn:hover{background:#4338ca}
+/* Sessions overlay */
+#sessions-overlay{position:fixed;inset:0;background:rgba(247,246,243,.97);z-index:9998;display:none;align-items:center;justify-content:center}
+#sessions-overlay.on{display:flex}
+.so-box{background:#fff;border:1px solid #e0dbd3;border-radius:16px;padding:36px;width:500px;max-width:calc(100vw - 40px);box-shadow:0 8px 32px rgba(0,0,0,0.08);max-height:80vh;display:flex;flex-direction:column}
+.so-title{font-size:18px;font-weight:800;letter-spacing:-0.025em;margin-bottom:3px}
+.so-sub{font-size:12px;color:#6b6560;margin-bottom:20px}
+.sessions-list{overflow-y:auto;flex:1;margin-bottom:14px}
+.session-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid #e0dbd3;border-radius:10px;cursor:pointer;margin-bottom:8px;transition:all 0.15s;background:#fff}
+.session-item:hover{border-color:#4f46e5;background:#eef2ff}
+.si-icon{font-size:26px;flex-shrink:0}
+.si-info{flex:1;min-width:0}
+.si-name{font-size:13px;font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.si-meta{font-size:11px;color:#6b6560}
+.si-del{width:28px;height:28px;border:none;background:transparent;cursor:pointer;color:#9ca3af;font-size:18px;display:flex;align-items:center;justify-content:center;border-radius:6px;flex-shrink:0;line-height:1}
+.si-del:hover{background:#fee2e2;color:#dc2626}
+.so-new{width:100%;padding:11px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background 0.15s}
+.so-new:hover{background:#4338ca}
+.so-empty{text-align:center;padding:20px;color:#6b6560;font-size:13px}
+/* Sessions header button */
+.btn-sessions{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid #e0dbd3;background:#fff;color:#6b6560;font-family:inherit;transition:all 0.15s;margin-left:12px}
+.btn-sessions:hover{border-color:#4f46e5;color:#4f46e5;background:#eef2ff}
 </style>
 </head>
 <body>
@@ -176,16 +197,12 @@ textarea:focus,input:focus,select:focus{border-color:var(--accent);box-shadow:0 
 </div>
 
 <script>
-(function(){
-  if(sessionStorage.getItem('sp_auth')==='1'){
-    document.getElementById('pw-gate').classList.add('hidden');
-  }
-})();
 function checkPw(){
   const val=document.getElementById('pw-input').value;
   if(val==='@Eld123'){
     sessionStorage.setItem('sp_auth','1');
     document.getElementById('pw-gate').classList.add('hidden');
+    if(window.afterAuth) window.afterAuth();
   }else{
     const inp=document.getElementById('pw-input');
     inp.classList.remove('shake');
@@ -197,6 +214,16 @@ function checkPw(){
 }
 </script>
 
+<!-- Sessions overlay -->
+<div id="sessions-overlay">
+  <div class="so-box">
+    <div class="so-title">📋 My Sessions</div>
+    <div class="so-sub">Resume a previous session or start a new one</div>
+    <div class="sessions-list" id="sessions-list"></div>
+    <button class="so-new" onclick="startNewSession()">+ New Session</button>
+  </div>
+</div>
+
 <div class="loading" id="loading">
   <div class="spin"></div>
   <div class="lt" id="lt">Processing...</div>
@@ -204,6 +231,7 @@ function checkPw(){
 
 <div class="header">
   <div class="logo">Synthetic <em>Personas</em></div>
+  <button class="btn-sessions" onclick="showSessionsOverlay()">📋 Sessions</button>
   <div class="steps">
     <div class="step active" data-s="1" onclick="nav(1)"><div class="sn">1</div><div class="sl">Data</div></div>
     <div class="sep">›</div>
@@ -332,6 +360,7 @@ Examples:
     </div>
     <div class="actions">
       <button class="btn btn-s" onclick="nav(3)">← Continue Interviews</button>
+      <button class="btn btn-s" id="btn-pdf" onclick="exportPDF()" style="display:none">📄 Export PDF</button>
       <button class="btn btn-p" id="btn-syn" onclick="runSynthesis()" disabled>🔬 Analyze & Synthesize</button>
     </div>
   </div>
@@ -513,7 +542,7 @@ IMPORTANT: Return ONLY the JSON object, nothing else. No explanation, no markdow
       return;
     }
   }
-  S.personas=personas;unlockAll();renderPersonasGrid();nav(2);hideLoad();
+  S.personas=personas;unlockAll();renderPersonasGrid();nav(2);hideLoad();autoSave();
 }
 
 // ── STEP 2: Personas ───────────────────────────────────────────────────────
@@ -663,7 +692,7 @@ Respond AS ${p.name} would — in first person, authentically, using language an
   }catch(e){
     S.interviews[id].push({role:'persona',content:"Sorry, I couldn't respond right now. Could you repeat the question?"});
   }
-  renderChat(id);scrollChat(id);renderInterviewStep();updateSynBar();
+  renderChat(id);scrollChat(id);renderInterviewStep();updateSynBar();autoSave();
 }
 
 // ── STEP 4: Synthesis ──────────────────────────────────────────────────────
@@ -680,6 +709,7 @@ function renderSynthesisStep(){
     :'<span style="font-size:12px;color:var(--text-2)">No interviews conducted</span>';
   if(S.synthesis){
     renderSynthesisHtml(S.synthesis);
+    const pdfBtn=document.getElementById('btn-pdf');if(pdfBtn)pdfBtn.style.display='';
   } else if(interviewed.length>0){
     document.getElementById('synthesis-out').innerHTML=`
       <div class="empty">
@@ -745,6 +775,8 @@ What prevents adoption, continued use, or full satisfaction?
     const res=await callClaude(prompt);
     S.synthesis=res;
     renderSynthesisHtml(S.synthesis);
+    const pdfBtn=document.getElementById('btn-pdf');if(pdfBtn)pdfBtn.style.display='';
+    autoSave();
 
     // Second call: extract chart data
     showLoad('Generating charts...');
@@ -851,6 +883,164 @@ function pi(t){
     .replace(/_(.+?)_/g,'<em>$1</em>')
     .replace(/"([^"]{5,100})"/g,'<em>"$1"</em>');
 }
+
+// ── PDF Export ─────────────────────────────────────────────────────────────
+function exportPDF(){
+  const synContent=document.querySelector('#synthesis-out .syn-content');
+  if(!synContent)return;
+  const interviewed=S.personas.filter(p=>(S.interviews[p.id]||[]).filter(m=>m.role==='user').length>0);
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head>
+    <meta charset="UTF-8">
+    <title>Synthesis — ${S.product||'Synthetic Personas'}</title>
+    <style>
+      *{box-sizing:border-box;margin:0;padding:0}
+      body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:760px;margin:40px auto;padding:0 24px;color:#191612;font-size:14px}
+      .rpt-header{margin-bottom:28px;padding-bottom:16px;border-bottom:2px solid #4f46e5}
+      .rpt-header h1{font-size:22px;font-weight:800;letter-spacing:-0.025em;color:#4f46e5;margin-bottom:5px}
+      .rpt-meta{font-size:12px;color:#6b6560}
+      .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+      .chip{background:#eef2ff;border:1px solid #c7d2fe;border-radius:20px;padding:4px 12px;font-size:12px;color:#3730a3;font-weight:600}
+      h2{font-size:15px;font-weight:800;margin:24px 0 8px;padding-bottom:6px;border-bottom:1.5px solid #e0dbd3}
+      h3{font-size:13px;font-weight:700;margin:14px 0 5px}
+      p{margin-bottom:9px;line-height:1.75}
+      ul,ol{margin:0 0 9px 18px;line-height:1.75}
+      li{margin-bottom:4px}
+      blockquote{border-left:3px solid #4f46e5;padding:6px 14px;margin:8px 0;color:#6b6560;background:#eef2ff;border-radius:0 6px 6px 0;font-style:italic}
+      strong{font-weight:700}em{font-style:italic;color:#6b6560}
+      .footer{margin-top:32px;padding-top:12px;border-top:1px solid #e0dbd3;font-size:11px;color:#9ca3af;text-align:center}
+      @media print{body{margin:20px}}
+    </style>
+  </head><body>
+    <div class="rpt-header">
+      <h1>Insight Synthesis Report</h1>
+      <div class="rpt-meta">Product: <strong>${S.product||'—'}</strong> &nbsp;·&nbsp; Goal: <strong>${S.goal||'—'}</strong> &nbsp;·&nbsp; ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</div>
+    </div>
+    <div class="chips">${interviewed.map(p=>`<span class="chip">${p.avatar} ${p.name} · ${(S.interviews[p.id]||[]).filter(m=>m.role==='user').length} questions</span>`).join('')}</div>
+    ${synContent.outerHTML}
+    <div class="footer">Generated by Synthetic Personas</div>
+    <script>setTimeout(function(){window.print()},400)<\/script>
+  </body></html>`);
+  win.document.close();
+}
+
+// ── Sessions (localStorage) ────────────────────────────────────────────────
+const SESSIONS_KEY='sp_sessions';
+const MAX_SESSIONS=10;
+
+function getSessions(){
+  try{return JSON.parse(localStorage.getItem(SESSIONS_KEY)||'[]')}catch(e){return[]}
+}
+function saveSessions(arr){
+  try{localStorage.setItem(SESSIONS_KEY,JSON.stringify(arr))}catch(e){console.warn('localStorage unavailable')}
+}
+
+function autoSave(){
+  if(!S.product&&!S.personas.length)return;
+  const sessions=getSessions();
+  const idx=sessions.findIndex(s=>s.id===S.sessionId);
+  const now=Date.now();
+  const session={
+    id:S.sessionId,
+    name:S.product||'Untitled Session',
+    product:S.product,goal:S.goal,count:S.count,
+    personas:S.personas,interviews:S.interviews,synthesis:S.synthesis,
+    updatedAt:now,
+    createdAt:idx>=0?sessions[idx].createdAt:now
+  };
+  if(idx>=0){sessions[idx]=session}
+  else{sessions.unshift(session);if(sessions.length>MAX_SESSIONS)sessions.pop()}
+  saveSessions(sessions);
+}
+
+function deleteSession(id,e){
+  e.stopPropagation();
+  if(!confirm('Delete this session?'))return;
+  saveSessions(getSessions().filter(s=>s.id!==id));
+  renderSessionsList();
+}
+
+function resumeSession(data){
+  const session=typeof data==='string'?JSON.parse(data):data;
+  S.sessionId=session.id;
+  S.product=session.product||'';
+  S.goal=session.goal||'';
+  S.count=session.count||3;
+  S.personas=session.personas||[];
+  S.interviews=session.interviews||{};
+  S.synthesis=session.synthesis||null;
+  const pi=document.getElementById('in-product');if(pi)pi.value=S.product;
+  const gi=document.getElementById('in-goal');if(gi)gi.value=S.goal;
+  const ci=document.getElementById('in-count');if(ci)ci.value=S.count;
+  hideSessionsOverlay();
+  if(S.personas.length>0){
+    unlockAll();
+    renderPersonasGrid();
+    if(S.synthesis)nav(4);
+    else if(Object.values(S.interviews).some(m=>m.length>0))nav(3);
+    else nav(2);
+  }else{nav(1)}
+}
+
+function startNewSession(){
+  S.sessionId='session_'+Date.now();
+  S.step=1;S.product='';S.data='';S.goal='';S.count=3;
+  S.personas=[];S.selId=null;S.activeId=null;S.interviews={};S.synthesis=null;
+  const pi=document.getElementById('in-product');if(pi)pi.value='';
+  const di=document.getElementById('in-data');if(di)di.value='';
+  const gi=document.getElementById('in-goal');if(gi)gi.value='';
+  hideSessionsOverlay();
+  nav(1);
+}
+
+function renderSessionsList(){
+  const sessions=getSessions();
+  const list=document.getElementById('sessions-list');
+  if(!list)return;
+  if(sessions.length===0){
+    list.innerHTML='<div class="so-empty">No saved sessions yet.<br>Complete an interview to save automatically.</div>';
+    return;
+  }
+  list.innerHTML=sessions.map(s=>{
+    const date=new Date(s.updatedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const qCount=Object.values(s.interviews||{}).reduce((a,m)=>a+m.filter(x=>x.role==='user').length,0);
+    const icon=s.synthesis?'📋':qCount>0?'💬':'👥';
+    const status=s.synthesis?'Synthesized':qCount>0?`${qCount} question${qCount>1?'s':''} asked`:`${(s.personas||[]).length} persona${(s.personas||[]).length!==1?'s':''} generated`;
+    const safeData=JSON.stringify(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+    return`<div class="session-item" onclick="resumeSession(JSON.parse(this.dataset.s))" data-s="${safeData}">
+      <div class="si-icon">${icon}</div>
+      <div class="si-info">
+        <div class="si-name">${s.name||'Untitled'}</div>
+        <div class="si-meta">${status} · ${date}</div>
+      </div>
+      <button class="si-del" onclick="deleteSession('${s.id}',event)" title="Delete">×</button>
+    </div>`;
+  }).join('');
+}
+
+function showSessionsOverlay(){
+  renderSessionsList();
+  document.getElementById('sessions-overlay').classList.add('on');
+}
+function hideSessionsOverlay(){
+  document.getElementById('sessions-overlay').classList.remove('on');
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+S.sessionId='session_'+Date.now();
+
+window.afterAuth=function(){
+  const sessions=getSessions();
+  if(sessions.length>0)showSessionsOverlay();
+};
+
+// If already authenticated (returning user), run afterAuth after page load
+window.addEventListener('load',function(){
+  if(sessionStorage.getItem('sp_auth')==='1'){
+    document.getElementById('pw-gate').classList.add('hidden');
+    window.afterAuth();
+  }
+});
 </script>
 </body>
 </html>
