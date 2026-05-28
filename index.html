@@ -529,9 +529,12 @@ ${data}
 ${existingSegs?`\nSegments already created — make this persona different: ${existingSegs}`:''}
 Persona number: ${i+1} of ${count}${imgNote}
 
-NAME RULES: Use American-sounding names (English-speaking, Western backgrounds). Every persona MUST have a completely unique first AND last name — absolutely no shared surnames or first names across any personas. Make names feel real and specific, not generic (avoid "John Smith", "Jane Doe", etc.).${usedNames?`\nNAMES ALREADY USED (do NOT reuse any part of these, not even the first name): ${usedNames}`:''}
+DATA PRIORITY — this overrides everything else:
+If the user data mentions nationality, country, region, language, ethnicity, or cultural background, ALL demographic fields (name, location, income, age) MUST be consistent with that. An Italian persona gets an Italian name and an Italian city. A Brazilian persona gets a Brazilian name and a Brazilian city. Never assign a location or name that contradicts the cultural context in the data.
 
-DEMOGRAPHIC DIVERSITY: For any field NOT explicitly stated in the user data (age, location, income, techLevel), you MUST vary it significantly from other personas. Do not cluster personas around the same city, age bracket, or salary range unless the data requires it. Spread across different life stages, geographies, and income levels to represent the realistic breadth of the user base.
+NAME RULES: Use a name that matches the cultural/national background implied by the user data. If no nationality is specified, default to American-sounding names. Every persona MUST have a completely unique first AND last name — no shared surnames or first names across personas. Avoid generic names (no "John Smith", "Jane Doe", etc.).${usedNames?`\nNAMES ALREADY USED (do NOT reuse any part of these, not even the first name): ${usedNames}`:''}
+
+DEMOGRAPHIC DIVERSITY: For any field NOT explicitly stated in the user data (age, location, income, techLevel), vary it significantly from other personas. Do not cluster personas around the same city, age bracket, or salary range unless the data requires it. Spread across different life stages, geographies, and income levels.
 
 CONFIDENCE SCORING RULES — be strict and honest:
 - "high": this field was explicitly stated or directly quoted in the user data
@@ -546,7 +549,7 @@ IMPORTANT: Return ONLY the JSON object, nothing else. No explanation, no markdow
       const raw=extractJSON(text);
       if(!raw||typeof raw!=='object'||Array.isArray(raw))throw new Error('Response is not a valid JSON object');
       const p=normalizePersona(raw,i);
-      if(!S.interviews[p.id])S.interviews[p.id]=[];
+      S.interviews[p.id]=[];
       personas.push(p);
     }catch(e){
       hideLoad();
