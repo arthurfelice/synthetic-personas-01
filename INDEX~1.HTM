@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Synthetic Personas</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f7f6f3;
+  --surface: #ffffff;
+  --surface-2: #f1efe9;
+  --border: #e0dbd3;
+  --text-dark: #191612;
+  --text-2: #6b6560;
+  --accent: #4f46e5;
+  --accent-light: #eef2ff;
+  --success: #059669;
+  --r: 12px;
+  --rs: 8px;
+  --sh: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --sh-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text-dark);min-height:100vh;font-size:14px}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;gap:16px;height:52px;position:sticky;top:0;z-index:50}
+.logo{font-weight:800;font-size:15px;letter-spacing:-0.03em;color:var(--accent)}
+.logo em{color:var(--text-2);font-style:normal;font-weight:400}
+.steps{display:flex;align-items:center;margin-left:auto}
+.step{display:flex;align-items:center;gap:7px;padding:6px 12px;cursor:pointer;border-radius:8px;transition:background 0.12s;white-space:nowrap}
+.step:hover{background:var(--surface-2)}
+.step.active .sn{background:var(--accent);color:#fff;border-color:var(--accent)}
+.step.done .sn{background:var(--success);color:#fff;border-color:var(--success)}
+.step.locked{opacity:.35;cursor:not-allowed;pointer-events:none}
+.sn{width:22px;height:22px;border-radius:50%;background:var(--surface-2);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;transition:all 0.2s}
+.sl{font-size:12px;font-weight:600;color:var(--text-dark)}
+.sep{color:var(--border);padding:0 2px;font-size:16px;user-select:none}
+.main{max-width:860px;margin:0 auto;padding:28px 20px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;box-shadow:var(--sh)}
+.card-title{font-size:17px;font-weight:800;letter-spacing:-0.025em;margin-bottom:3px}
+.card-sub{font-size:12px;color:var(--text-2);margin-bottom:20px;line-height:1.5}
+label{display:block;font-size:12px;font-weight:700;color:var(--text-dark);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.04em}
+textarea,input,select{width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:13px;font-family:inherit;background:var(--surface);color:var(--text-dark);outline:none;transition:border-color 0.15s,box-shadow 0.15s;resize:vertical;line-height:1.5}
+textarea:focus,input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,70,229,0.1)}
+.fg{margin-bottom:14px}
+.hint{font-size:11px;color:var(--text-2);margin-top:4px}
+.row{display:flex;gap:12px;align-items:flex-start}
+.f1{flex:1}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--rs);font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all 0.15s;font-family:inherit}
+.btn-p{background:var(--accent);color:#fff}
+.btn-p:hover{background:#4338ca}
+.btn-p:disabled{background:var(--border);color:var(--text-2);cursor:not-allowed}
+.btn-s{background:var(--surface-2);color:var(--text-dark);border:1.5px solid var(--border)}
+.btn-s:hover{background:var(--border)}
+.btn-g{background:transparent;color:var(--accent);padding:5px 10px;font-size:12px}
+.btn-g:hover{background:var(--accent-light);border-radius:6px}
+.alert{padding:11px 15px;border-radius:var(--rs);font-size:13px;margin-bottom:16px;display:flex;gap:8px;align-items:flex-start;line-height:1.5}
+.alert-info{background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe}
+.alert-warn{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
+.pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-top:18px}
+.pc{border:2px solid var(--border);border-radius:var(--r);padding:18px;cursor:pointer;transition:all 0.15s;background:var(--surface)}
+.pc:hover{border-color:var(--accent);box-shadow:var(--sh-md);transform:translateY(-1px)}
+.pc.sel{border-color:var(--accent);background:var(--accent-light)}
+.p-ava{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:11px;flex-shrink:0}
+.p-name{font-size:15px;font-weight:800;letter-spacing:-0.02em;margin-bottom:1px}
+.p-role{font-size:11px;color:var(--text-2);margin-bottom:9px}
+.tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:9px}
+.tag{background:var(--surface-2);border:1px solid var(--border);padding:2px 8px;border-radius:20px;font-size:10px;color:var(--text-2)}
+.tag.accent{font-weight:600}
+.p-quote{font-size:11px;color:var(--text-2);font-style:italic;border-left:2px solid var(--accent);padding-left:8px;line-height:1.5}
+.ib{display:inline-flex;align-items:center;gap:4px;background:#dcfce7;color:#166534;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;margin-top:8px}
+.pd{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-top:18px}
+.pd-head{color:#fff;padding:20px 22px;display:flex;align-items:center;gap:14px}
+.pd-ava{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+.pd-name{font-size:18px;font-weight:800;margin-bottom:3px}
+.pd-role{font-size:12px;opacity:.8}
+.pd-body{padding:18px 22px}
+.dg{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.di label{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-2)}
+.di p{font-size:13px;margin-top:2px;font-weight:500}
+.ds{margin-bottom:14px}
+.ds label{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-2);display:block;margin-bottom:5px}
+.dl{list-style:none;display:flex;flex-direction:column;gap:4px}
+.dl li{font-size:12px;display:flex;gap:6px;align-items:flex-start;line-height:1.5}
+.dl li::before{content:'•';color:var(--accent);flex-shrink:0;font-weight:700}
+.p-selector{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.ps-chip{display:flex;align-items:center;gap:8px;border:1.5px solid var(--border);border-radius:var(--r);padding:9px 14px;cursor:pointer;transition:all 0.15s;background:var(--surface);min-width:150px}
+.ps-chip:hover{border-color:var(--accent)}
+.ps-chip.active{border-color:var(--accent);background:var(--accent-light)}
+.ps-chip-name{font-size:13px;font-weight:700}
+.ps-chip-count{font-size:11px;color:var(--text-2)}
+.i-head{display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--surface-2);border-radius:var(--r);margin-bottom:14px}
+.i-ava{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.chat-wrap{height:360px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px;display:flex;flex-direction:column;gap:10px;background:var(--bg);scroll-behavior:smooth}
+.msg{display:flex;gap:8px;max-width:88%}
+.msg.u{align-self:flex-end;flex-direction:row-reverse}
+.mb{padding:10px 13px;border-radius:14px;font-size:13px;line-height:1.55}
+.msg.u .mb{background:var(--accent);color:#fff;border-bottom-right-radius:3px}
+.msg.p .mb{background:var(--surface);border:1px solid var(--border);border-bottom-left-radius:3px}
+.mava{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:2px;border:1px solid var(--border)}
+.ci-row{display:flex;gap:8px}
+.ci-row textarea{height:42px;min-height:42px;max-height:100px;resize:none;padding:10px 13px;line-height:1.4}
+.typing{display:flex;align-items:center;gap:4px;padding:10px 13px;background:var(--surface);border:1px solid var(--border);border-radius:14px;border-bottom-left-radius:3px;width:fit-content}
+.td{width:6px;height:6px;border-radius:50%;background:var(--text-2);animation:td 1.2s infinite}
+.td:nth-child(2){animation-delay:.2s}
+.td:nth-child(3){animation-delay:.4s}
+@keyframes td{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+.suggestions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center}
+.sug-label{font-size:11px;color:var(--text-2)}
+.sug-btn{background:var(--surface-2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11px;cursor:pointer;color:var(--text-dark);transition:all 0.12s;font-family:inherit}
+.sug-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
+.syn-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.syn-chip{display:flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:12px}
+.syn-chip strong{font-weight:700}
+.syn-content{font-size:13px;line-height:1.75;color:var(--text-dark)}
+.syn-content h2{font-size:15px;font-weight:800;margin:22px 0 8px;letter-spacing:-0.02em;padding-bottom:6px;border-bottom:1.5px solid var(--border)}
+.syn-content h2:first-child{margin-top:0}
+.syn-content h3{font-size:13px;font-weight:700;margin:14px 0 5px}
+.syn-content p{margin-bottom:9px}
+.syn-content ul{margin:0 0 9px 18px}
+.syn-content li{margin-bottom:4px}
+.syn-content strong{font-weight:700}
+.syn-content em{font-style:italic;color:var(--text-2)}
+.syn-content blockquote{border-left:3px solid var(--accent);padding:6px 12px;margin:8px 0;color:var(--text-2);background:var(--accent-light);border-radius:0 6px 6px 0;font-style:italic}
+.loading{display:none;position:fixed;inset:0;background:rgba(255,255,255,.88);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+.loading.on{display:flex}
+.spin{width:38px;height:38px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .75s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.lt{font-size:13px;color:var(--text-2)}
+.empty{text-align:center;padding:44px 20px;color:var(--text-2)}
+.ei{font-size:38px;margin-bottom:10px}
+.et{font-size:15px;font-weight:700;color:var(--text-dark);margin-bottom:5px}
+.es{font-size:12px}
+.page{display:none}
+.page.on{display:block}
+.actions{display:flex;gap:10px;align-items:center;margin-top:20px}
+/* Image upload */
+.img-upload-wrap{border:2px dashed var(--border);border-radius:var(--r);padding:16px;text-align:center;cursor:pointer;transition:all 0.15s;background:var(--surface-2)}
+.img-upload-wrap:hover{border-color:var(--accent);background:var(--accent-light)}
+.img-upload-wrap.has-file{border-color:var(--success);background:#f0fdf4}
+.img-thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;justify-content:flex-start}
+.img-thumb{position:relative;width:72px;height:72px}
+.img-thumb img{width:72px;height:72px;object-fit:cover;border-radius:8px;border:1.5px solid var(--border)}
+.img-thumb .rm{position:absolute;top:-5px;right:-5px;width:18px;height:18px;border-radius:50%;background:#dc2626;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:700;border:none;line-height:1}
+.img-hide{display:none}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<style>
+#pw-gate{position:fixed;inset:0;background:#f7f6f3;z-index:9999;display:flex;align-items:center;justify-content:center}
+#pw-gate.hidden{display:none}
+.pw-box{background:#fff;border:1px solid #e0dbd3;border-radius:16px;padding:40px 36px;width:340px;box-shadow:0 8px 32px rgba(0,0,0,0.08);text-align:center}
+.pw-logo{font-weight:800;font-size:17px;letter-spacing:-0.03em;color:#4f46e5;margin-bottom:4px}
+.pw-logo em{color:#6b6560;font-style:normal;font-weight:400}
+.pw-sub{font-size:12px;color:#6b6560;margin-bottom:28px}
+.pw-box input{width:100%;padding:10px 14px;border:1.5px solid #e0dbd3;border-radius:8px;font-size:14px;font-family:inherit;outline:none;text-align:center;letter-spacing:0.05em;transition:border-color 0.15s,box-shadow 0.15s}
+.pw-box input:focus{border-color:#4f46e5;box-shadow:0 0 0 3px rgba(79,70,229,0.1)}
+.pw-box input.shake{animation:shake .35s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.pw-err{font-size:12px;color:#dc2626;margin-top:8px;min-height:16px}
+.pw-btn{width:100%;margin-top:16px;padding:10px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background 0.15s}
+.pw-btn:hover{background:#4338ca}
+</style>
+</head>
+<body>
+
+<!-- Password gate -->
+<div id="pw-gate">
+  <div class="pw-box">
+    <div class="pw-logo">Synthetic <em>Personas</em></div>
+    <div class="pw-sub">Enter the access password to continue</div>
+    <input type="password" id="pw-input" placeholder="Password" onkeydown="if(event.key==='Enter')checkPw()" autofocus>
+    <div class="pw-err" id="pw-err"></div>
+    <button class="pw-btn" onclick="checkPw()">Enter →</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  if(sessionStorage.getItem('sp_auth')==='1'){
+    document.getElementById('pw-gate').classList.add('hidden');
+  }
+})();
+function checkPw(){
+  const val=document.getElementById('pw-input').value;
+  if(val==='@Eld123'){
+    sessionStorage.setItem('sp_auth','1');
+    document.getElementById('pw-gate').classList.add('hidden');
+  }else{
+    const inp=document.getElementById('pw-input');
+    inp.classList.remove('shake');
+    void inp.offsetWidth;
+    inp.classList.add('shake');
+    document.getElementById('pw-err').textContent='Incorrect password. Try again.';
+    inp.value='';inp.focus();
+  }
+}
+</script>
+
+<div class="loading" id="loading">
+  <div class="spin"></div>
+  <div class="lt" id="lt">Processing...</div>
+</div>
+
+<div class="header">
+  <div class="logo">Synthetic <em>Personas</em></div>
+  <div class="steps">
+    <div class="step active" data-s="1" onclick="nav(1)"><div class="sn">1</div><div class="sl">Data</div></div>
+    <div class="sep">›</div>
+    <div class="step locked" data-s="2" onclick="nav(2)"><div class="sn">2</div><div class="sl">Personas</div></div>
+    <div class="sep">›</div>
+    <div class="step locked" data-s="3" onclick="nav(3)"><div class="sn">3</div><div class="sl">Interview</div></div>
+    <div class="sep">›</div>
+    <div class="step locked" data-s="4" onclick="nav(4)"><div class="sn">4</div><div class="sl">Synthesis</div></div>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- PAGE 1: Data -->
+<div id="pg1" class="page on">
+  <div class="card">
+    <div class="card-title">📊 Context Data</div>
+    <div class="card-sub">Paste CRM data, Analytics exports, feedback, or describe your user segments. The richer the context, the more accurate the personas.</div>
+    <div class="alert alert-info">
+      💡 Examples: Mixpanel exports, HubSpot segments, support transcripts, NPS results, user demographics, qualitative feedback, app store reviews.
+    </div>
+    <div class="fg">
+      <label>Product / Service</label>
+      <input type="text" id="in-product" placeholder="e.g. AI coding assistant for software engineers at large tech companies" />
+    </div>
+    <div class="fg">
+      <label>Customer / User Data</label>
+      <textarea id="in-data" rows="11" placeholder="Paste raw data, feedback, segment descriptions, support logs, survey results...
+
+Examples:
+• Segment A: Engineering managers, 35-50 yrs, main pain: team velocity vs. burnout
+• Segment B: Individual contributors, 25-35 yrs, hybrid work, want AI help without losing control
+• Recurring feedback: 'hard to trust AI suggestions', 'want to understand what it changed'
+• NPS: promoters mention 'saves hours of boilerplate', detractors cite 'unpredictable behavior'
+• 60% of churn happens in the first 30 days
+• CRM data: avg deal $280/mo, sales cycle 14 days, CAC $320"></textarea>
+      <div class="hint">Free text, tables, bullets — no need to structure it.</div>
+    </div>
+    <div class="row">
+      <div class="f1 fg">
+        <label>How many personas?</label>
+        <select id="in-count">
+          <option value="1">1 persona</option>
+          <option value="2">2 personas</option>
+          <option value="3" selected>3 personas</option>
+          <option value="4">4 personas</option>
+        </select>
+      </div>
+      <div class="f1 fg">
+        <label>Research goal</label>
+        <select id="in-goal" onchange="onGoalChange(this.value)">
+          <option value="" disabled selected>Select an option</option>
+          <option value="product">Product / feature validation</option>
+          <option value="ux">UX and user experience</option>
+          <option value="marketing">Messaging and positioning</option>
+          <option value="churn">Understand churn / retention</option>
+          <option value="discovery">General discovery</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="fg img-hide" id="img-upload-section">
+      <label>Product Images <span style="font-weight:400;text-transform:none;font-size:11px;color:var(--text-2)">(optional — screenshots, mockups, photos)</span></label>
+      <div class="img-upload-wrap" id="img-drop" onclick="document.getElementById('img-file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondrop="handleDrop(event)" ondragleave="this.style.borderColor=''">
+        <input type="file" id="img-file" class="img-hide" accept="image/*" multiple onchange="handleFiles(this.files)">
+        <div id="img-placeholder" style="color:var(--text-2)">
+          <div style="font-size:26px;margin-bottom:6px">🖼️</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text-dark)">Click or drag images here</div>
+          <div style="font-size:11px;margin-top:3px">PNG, JPG, WebP · up to 5 images · 5 MB each</div>
+        </div>
+      </div>
+      <div class="img-thumbs" id="img-thumbs"></div>
+      <div class="hint">Personas will analyze the images as if seeing the actual product, and respond based on what they observe.</div>
+    </div>
+
+    <button class="btn btn-p" onclick="generatePersonas()">✨ Generate Synthetic Personas</button>
+  </div>
+</div>
+
+<!-- PAGE 2: Personas -->
+<div id="pg2" class="page">
+  <div class="card">
+    <div class="card-title">👥 Generated Personas</div>
+    <div class="card-sub">Click a persona to see full details. Use the button to start interviews.</div>
+    <div id="personas-grid"><div class="empty"><div class="ei">🎭</div><div class="et">No personas generated yet</div><div class="es">Go back to Step 1 and add your data</div></div></div>
+    <div id="persona-detail"></div>
+    <div class="actions">
+      <button class="btn btn-s" onclick="nav(1)">← Refine Data</button>
+      <button class="btn btn-p" onclick="nav(3)">Start Interviews →</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 3: Interview -->
+<div id="pg3" class="page">
+  <div class="card">
+    <div class="card-title">🎙️ Persona Interview</div>
+    <div class="card-sub">Select a persona and ask open-ended questions. They will respond in character.</div>
+    <div id="p-selector" class="p-selector"></div>
+    <div id="interview-area"><div class="empty"><div class="ei">💬</div><div class="et">Select a persona above</div><div class="es">Click one of the personas to start the interview</div></div></div>
+    <div class="actions">
+      <button class="btn btn-s" onclick="nav(2)">← View Personas</button>
+      <button class="btn btn-p" onclick="nav(4)">View Synthesis →</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 4: Synthesis -->
+<div id="pg4" class="page">
+  <div class="card">
+    <div class="card-title">📋 Insight Synthesis</div>
+    <div class="card-sub">Consolidated analysis of all interviews conducted with the synthetic personas.</div>
+    <div id="syn-bar" class="syn-bar"></div>
+    <div id="synthesis-out"><div class="empty"><div class="ei">🔬</div><div class="et">No interviews conducted yet</div><div class="es">Complete at least one interview in Step 3 to enable synthesis</div></div></div>
+    <div id="syn-charts" style="display:none;margin-top:24px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:18px">
+          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-2);margin-bottom:14px">Key Themes</div>
+          <canvas id="chart-themes" height="200"></canvas>
+        </div>
+        <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:18px">
+          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-2);margin-bottom:14px">Persona Comparison</div>
+          <canvas id="chart-radar" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-s" onclick="nav(3)">← Continue Interviews</button>
+      <button class="btn btn-p" id="btn-syn" onclick="runSynthesis()" disabled>🔬 Analyze & Synthesize</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+const S={step:1,product:'',data:'',goal:'product',count:3,personas:[],selId:null,activeId:null,interviews:{},synthesis:null};
+const COLORS=['#4f46e5','#7c3aed','#0891b2','#059669','#d97706','#dc2626'];
+const AVATARS=['👩‍💼','👨‍💻','👩‍🔬','👨‍🎨','👩‍🏫','👨‍🏢','👩‍💻','👨‍🍳'];
+
+// ── Image upload state ─────────────────────────────────────────────────────
+const S_imgs=[]; // [{name, base64, mediaType}]
+
+function onGoalChange(val){
+  const sec=document.getElementById('img-upload-section');
+  if(val==='product'){sec.classList.remove('img-hide')}else{sec.classList.add('img-hide')}
+}
+
+function handleFiles(files){
+  const MAX=5,MAXBYTES=5*1024*1024;
+  Array.from(files).slice(0,MAX-S_imgs.length).forEach(f=>{
+    if(!f.type.startsWith('image/')){alert('Only image files are supported.');return}
+    if(f.size>MAXBYTES){alert(`"${f.name}" is larger than 5 MB. Please choose a smaller image.`);return}
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const dataUrl=e.target.result;
+      const [meta,b64]=dataUrl.split(',');
+      const mediaType=meta.match(/:(.*?);/)[1]||'image/jpeg';
+      S_imgs.push({name:f.name,base64:b64,mediaType});
+      renderThumbs();
+    };
+    reader.readAsDataURL(f);
+  });
+}
+
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('img-drop').style.borderColor='';
+  handleFiles(e.dataTransfer.files);
+}
+
+function removeImg(i){
+  S_imgs.splice(i,1);
+  renderThumbs();
+}
+
+function renderThumbs(){
+  const wrap=document.getElementById('img-thumbs');
+  const placeholder=document.getElementById('img-placeholder');
+  if(S_imgs.length===0){wrap.innerHTML='';placeholder.style.display='';document.getElementById('img-drop').classList.remove('has-file');return}
+  placeholder.style.display='none';
+  document.getElementById('img-drop').classList.add('has-file');
+  wrap.innerHTML=S_imgs.map((img,i)=>`
+    <div class="img-thumb">
+      <img src="data:${img.mediaType};base64,${img.base64}" alt="${img.name}">
+      <button class="rm" onclick="event.stopPropagation();removeImg(${i})">×</button>
+    </div>`).join('');
+}
+
+// ── API call ───────────────────────────────────────────────────────────────
+async function callClaude(prompt, images=[]){
+  const body={prompt};
+  if(images&&images.length>0) body.images=images;
+  const res=await fetch('/api/claude',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(body)
+  });
+  if(!res.ok){
+    const err=await res.json().catch(()=>({error:`HTTP ${res.status}`}));
+    throw new Error(err.error||`HTTP ${res.status}`);
+  }
+  const data=await res.json();
+  return data.text; // plain string
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function showLoad(t='Processing...'){document.getElementById('lt').textContent=t;document.getElementById('loading').classList.add('on')}
+function hideLoad(){document.getElementById('loading').classList.remove('on')}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}
+function unlockAll(){document.querySelectorAll('.step').forEach(s=>s.classList.remove('locked'))}
+
+function extractJSON(t){
+  if(!t)throw new Error('Empty response');
+  try{return JSON.parse(t)}catch(e){}
+  const cb=t.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if(cb){try{return JSON.parse(cb[1].trim())}catch(e){}}
+  const os=t.indexOf('{'),oe=t.lastIndexOf('}');
+  if(os!==-1&&oe>os){try{return JSON.parse(t.slice(os,oe+1))}catch(e){}}
+  const as=t.indexOf('['),ae=t.lastIndexOf(']');
+  if(as!==-1&&ae>as){try{return JSON.parse(t.slice(as,ae+1))}catch(e){}}
+  throw new Error('Could not extract JSON. Got: '+t.slice(0,120));
+}
+
+function normalizePersona(p,i){
+  const arr=v=>Array.isArray(v)?v:(typeof v==='string'?v.split(',').map(s=>s.trim()).filter(Boolean):[]);
+  return{
+    id:`p${i+1}`,
+    name:p.name||p.Name||'—',
+    age:p.age||p.Age||'—',
+    location:p.location||p.Location||p.city||'—',
+    occupation:p.occupation||p.Occupation||p.job||p.role||'—',
+    income:p.income||p.Income||p.salary||'—',
+    techLevel:p.techLevel||p.tech_level||p.technical_level||'—',
+    segment:p.segment||p.Segment||p.type||'—',
+    background:p.background||p.Background||p.bio||'—',
+    jtbd:p.jtbd||p.job_to_be_done||p.jobToBeDone||'—',
+    goals:arr(p.goals||p.Goals||[]),
+    pains:arr(p.pains||p.Pains||p.pain_points||[]),
+    behaviors:arr(p.behaviors||p.Behaviors||[]),
+    quote:p.quote||p.Quote||'—',
+    tags:arr(p.tags||p.Tags||[]),
+    color:COLORS[i%COLORS.length],
+    avatar:AVATARS[i%AVATARS.length]
+  };
+}
+
+// ── Navigation ─────────────────────────────────────────────────────────────
+function nav(n){
+  if(n>1&&S.personas.length===0)return;
+  S.step=n;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.getElementById(`pg${n}`).classList.add('on');
+  document.querySelectorAll('.step').forEach(s=>{
+    const sn=parseInt(s.dataset.s);
+    s.classList.remove('active','done','locked');
+    if(sn===n)s.classList.add('active');
+    else if(sn<n)s.classList.add('done');
+    else if(S.personas.length===0)s.classList.add('locked');
+  });
+  if(n===3)renderInterviewStep();
+  if(n===4)renderSynthesisStep();
+}
+
+// ── STEP 1: Generate Personas ──────────────────────────────────────────────
+async function generatePersonas(){
+  const product=document.getElementById('in-product').value.trim();
+  const data=document.getElementById('in-data').value.trim();
+  const count=parseInt(document.getElementById('in-count').value);
+  const goal=document.getElementById('in-goal').value;
+  if(!product&&!data){alert('Please fill in at least the "Product / Service" field or the user data.');return}
+  if(!goal){alert('Please select a Research Goal before generating personas.');return}
+  S.product=product;S.data=data;S.count=count;S.goal=goal;
+  const personas=[];
+  for(let i=0;i<count;i++){
+    showLoad(`Generating persona ${i+1} of ${count}...`);
+    const existingSegs=personas.map(p=>p.segment).join(', ');
+    const imgNote=S_imgs.length>0
+      ?`\nPRODUCT IMAGES: ${S_imgs.length} image(s) of the product have been provided. When crafting this persona's background, JTBD, and quote, assume they have seen or interacted with this product visually.`
+      :'';
+    const prompt=`You are a UX researcher. Create exactly ONE synthetic user persona as a JSON object.
+
+Product/Service: "${product||'not specified'}"
+Research goal: ${goal}
+User context:
+${data}
+${existingSegs?`\nSegments already created — make this persona different: ${existingSegs}`:''}
+Persona number: ${i+1} of ${count}${imgNote}
+
+NAME RULES: Use culturally diverse, realistic names from varied backgrounds (American, Latino/a, Asian, European, African, Middle Eastern, etc.). Every persona MUST have a completely unique first AND last name — absolutely no shared surnames or first names across any personas. Make names feel real and specific, not generic (avoid "John Smith", "Jane Doe", etc.).
+
+IMPORTANT: Return ONLY the JSON object, nothing else. No explanation, no markdown, no code fences. Start with { and end with }
+
+{"id":"p${i+1}","name":"Full Name","age":30,"location":"City, Country","occupation":"Job Title","income":"salary range","techLevel":"Beginner|Intermediate|Advanced|Expert","segment":"Short Segment Name","background":"2 sentences: life context and relationship with this product","jtbd":"One sentence: the main job this person hires the product to do","goals":["goal1","goal2","goal3"],"pains":["pain1","pain2","pain3"],"behaviors":["digital behavior1","behavior2","behavior3"],"quote":"Authentic first-person quote capturing this persona","tags":["tag1","tag2","tag3"]}`;
+    try{
+      const text=await callClaude(prompt, S_imgs);
+      const raw=extractJSON(text);
+      if(!raw||typeof raw!=='object'||Array.isArray(raw))throw new Error('Response is not a valid JSON object');
+      const p=normalizePersona(raw,i);
+      if(!S.interviews[p.id])S.interviews[p.id]=[];
+      personas.push(p);
+    }catch(e){
+      hideLoad();
+      alert(`Error generating persona ${i+1} of ${count}.\n\nDetail: ${e.message}\n\nPlease try again.`);
+      return;
+    }
+  }
+  S.personas=personas;unlockAll();renderPersonasGrid();nav(2);hideLoad();
+}
+
+// ── STEP 2: Personas ───────────────────────────────────────────────────────
+function renderPersonasGrid(){
+  document.getElementById('personas-grid').innerHTML=`<div class="pg">${S.personas.map(p=>`
+    <div class="pc ${S.selId===p.id?'sel':''}" onclick="selPersona('${p.id}')">
+      <div class="p-ava" style="background:${p.color}20">${p.avatar}</div>
+      <div class="p-name">${p.name}</div>
+      <div class="p-role">${p.occupation} · ${p.age} yrs · ${p.location}</div>
+      <div class="tags">
+        ${(p.tags||[]).slice(0,2).map(t=>`<span class="tag">${t}</span>`).join('')}
+        <span class="tag accent" style="background:${p.color}15;border-color:${p.color}30;color:${p.color}">${p.segment}</span>
+      </div>
+      <div class="p-quote">"${p.quote}"</div>
+      ${(S.interviews[p.id]||[]).filter(m=>m.role==='user').length>0
+        ?`<div class="ib">✓ ${S.interviews[p.id].filter(m=>m.role==='user').length} questions asked</div>`:''}
+    </div>`).join('')}</div>`;
+}
+
+function selPersona(id){
+  S.selId=id;renderPersonasGrid();
+  const p=S.personas.find(x=>x.id===id);if(!p)return;
+  document.getElementById('persona-detail').innerHTML=`
+    <div class="pd">
+      <div class="pd-head" style="background:linear-gradient(135deg,${p.color} 0%,${p.color}99 100%)">
+        <div class="pd-ava">${p.avatar}</div>
+        <div><div class="pd-name">${p.name}</div><div class="pd-role">${p.occupation} · ${p.segment} · ${p.techLevel}</div></div>
+        <button class="btn btn-g" style="margin-left:auto;color:#fff;opacity:.8" onclick="startInterview('${p.id}')">🎙️ Interview</button>
+      </div>
+      <div class="pd-body">
+        <div class="dg">
+          <div class="di"><label>Age</label><p>${p.age} yrs</p></div>
+          <div class="di"><label>Location</label><p>${p.location}</p></div>
+          <div class="di"><label>Income</label><p>${p.income||'—'}</p></div>
+          <div class="di"><label>Tech level</label><p>${p.techLevel||'—'}</p></div>
+        </div>
+        <div class="ds"><label>Background</label><p style="font-size:13px;line-height:1.65;color:var(--text-2)">${p.background}</p></div>
+        <div class="ds"><label>Job-to-be-done</label><p style="font-size:13px;line-height:1.65">${p.jtbd}</p></div>
+        <div class="dg">
+          <div class="ds"><label>Goals</label><ul class="dl">${(p.goals||[]).map(g=>`<li>${g}</li>`).join('')}</ul></div>
+          <div class="ds"><label>Pain Points</label><ul class="dl">${(p.pains||[]).map(g=>`<li>${g}</li>`).join('')}</ul></div>
+        </div>
+        <div class="ds"><label>Behaviors</label><ul class="dl">${(p.behaviors||[]).map(g=>`<li>${g}</li>`).join('')}</ul></div>
+      </div>
+    </div>`;
+}
+
+function startInterview(id){S.activeId=id;nav(3)}
+
+// ── STEP 3: Interview ──────────────────────────────────────────────────────
+function renderInterviewStep(){
+  document.getElementById('p-selector').innerHTML=S.personas.map(p=>`
+    <div class="ps-chip ${S.activeId===p.id?'active':''}" onclick="selInterview('${p.id}')">
+      <span style="font-size:20px">${p.avatar}</span>
+      <div>
+        <div class="ps-chip-name">${p.name.split(' ')[0]}</div>
+        <div class="ps-chip-count">${(S.interviews[p.id]||[]).filter(m=>m.role==='user').length>0?`${S.interviews[p.id].filter(m=>m.role==='user').length} questions`:'Not started'}</div>
+      </div>
+    </div>`).join('');
+  if(S.activeId)renderChat(S.activeId);
+}
+
+function selInterview(id){S.activeId=id;renderInterviewStep()}
+
+function renderChat(id){
+  const p=S.personas.find(x=>x.id===id);if(!p)return;
+  const msgs=S.interviews[id]||[];
+  document.getElementById('interview-area').innerHTML=`
+    <div class="i-head">
+      <div class="i-ava" style="background:${p.color}20">${p.avatar}</div>
+      <div><div style="font-weight:800;font-size:14px">${p.name}</div><div style="font-size:11px;color:var(--text-2)">${p.occupation} · ${p.segment}</div></div>
+      <button class="btn btn-g" style="margin-left:auto" onclick="clearChat('${id}')">🗑 Clear</button>
+    </div>
+    <div class="chat-wrap" id="cw-${id}">
+      ${msgs.length===0
+        ?`<div style="margin:auto;text-align:center;color:var(--text-2)"><div style="font-size:30px;margin-bottom:8px">💬</div><div style="font-size:13px;font-weight:700;color:var(--text-dark);margin-bottom:3px">Start the interview</div><div style="font-size:11px">Ask open-ended questions to explore motivations and pain points</div></div>`
+        :msgs.map(m=>m.role==='user'
+          ?`<div class="msg u"><div class="mava" style="background:var(--surface-2)">👤</div><div class="mb">${esc(m.content)}</div></div>`
+          :`<div class="msg p"><div class="mava" style="background:${p.color}20;border-color:${p.color}30">${p.avatar}</div><div class="mb">${esc(m.content)}</div></div>`
+        ).join('')}
+    </div>
+    <div class="ci-row">
+      <textarea id="qi" placeholder="Ask ${p.name.split(' ')[0]} a question..." onkeydown="handleKey(event,'${id}')"></textarea>
+      <button class="btn btn-p" id="btn-send" onclick="askPersona('${id}')">Send</button>
+    </div>
+    <div class="suggestions">
+      <span class="sug-label">Suggestions:</span>
+      ${getSuggestions().map(s=>`<button class="sug-btn" onclick="useSug('${id}',this.dataset.q)" data-q="${s.replace(/"/g,'&quot;')}">${s}</button>`).join('')}
+    </div>`;
+  scrollChat(id);
+}
+
+function getSuggestions(){
+  const m={
+    product:['Which features are essential for you?','What would make you recommend this product?','What is still missing?'],
+    ux:['What was your last experience using it like?','What could be simpler?','Where do you get stuck most often?'],
+    marketing:['How would you describe this product to a friend?','Why did you choose this over the competition?','What was your first impression?'],
+    churn:['What would make you stop using it?','What is missing for this to be indispensable?','Have you thought about canceling? What kept you?'],
+    discovery:['What is your biggest challenge today?','How do you currently solve this?','What would your ideal solution look like?']
+  };
+  return['How do you solve this problem today?',...(m[S.goal]||[]).slice(0,2)];
+}
+
+function useSug(id,q){document.getElementById('qi').value=q;askPersona(id)}
+function handleKey(e,id){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();askPersona(id)}}
+function clearChat(id){if(!confirm('Clear this interview?'))return;S.interviews[id]=[];renderInterviewStep()}
+function scrollChat(id){setTimeout(()=>{const c=document.getElementById(`cw-${id}`);if(c)c.scrollTop=c.scrollHeight},60)}
+
+async function askPersona(id){
+  const input=document.getElementById('qi');
+  const q=input.value.trim();if(!q)return;
+  const p=S.personas.find(x=>x.id===id);if(!p)return;
+  if(!S.interviews[id])S.interviews[id]=[];
+  S.interviews[id].push({role:'user',content:q});
+  input.value='';
+  const btn=document.getElementById('btn-send');if(btn)btn.disabled=true;
+  renderChat(id);
+  const cw=document.getElementById(`cw-${id}`);
+  if(cw){
+    const ty=document.createElement('div');ty.className='msg p';ty.id='typing';
+    ty.innerHTML=`<div class="mava" style="background:${p.color}20;border-color:${p.color}30">${p.avatar}</div><div class="typing"><div class="td"></div><div class="td"></div><div class="td"></div></div>`;
+    cw.appendChild(ty);cw.scrollTop=cw.scrollHeight;
+  }
+  const hist=S.interviews[id].slice(0,-1);
+  const imgContext=S_imgs.length>0?`\nVISUAL CONTEXT: You have seen ${S_imgs.length} image(s) of the product. Reference specific visual elements naturally in your answers when relevant.`:'';
+  const prompt=`You are ${p.name}, a synthetic persona created from real user data.
+
+PROFILE:
+- Name: ${p.name} | Age: ${p.age} | Location: ${p.location}
+- Occupation: ${p.occupation} | Income: ${p.income||'not specified'} | Tech level: ${p.techLevel}
+- Segment: ${p.segment}
+- Background: ${p.background}
+- Job-to-be-done: ${p.jtbd}
+- Goals: ${(p.goals||[]).join('; ')}
+- Pain points: ${(p.pains||[]).join('; ')}
+- Behaviors: ${(p.behaviors||[]).join('; ')}
+- Defining quote: "${p.quote}"
+- Product being discussed: ${S.product||'not specified'}${imgContext}
+
+${hist.length?`CONVERSATION HISTORY:\n${hist.map(m=>`${m.role==='user'?'Interviewer':p.name}: ${m.content}`).join('\n\n')}\n\n`:''}INTERVIEWER QUESTION:
+${q}
+
+Respond AS ${p.name} would — in first person, authentically, using language and vocabulary consistent with your profile. Include personal details, opinions, and life context. Be natural, spontaneous, and human. You may include hesitations or nuance. DO NOT break character. DO NOT reveal you are an AI. Respond in 2–4 paragraphs.`;
+  try{
+    const ans=await callClaude(prompt, S_imgs);
+    S.interviews[id].push({role:'persona',content:ans});
+  }catch(e){
+    S.interviews[id].push({role:'persona',content:"Sorry, I couldn't respond right now. Could you repeat the question?"});
+  }
+  renderChat(id);scrollChat(id);renderInterviewStep();updateSynBar();
+}
+
+// ── STEP 4: Synthesis ──────────────────────────────────────────────────────
+function updateSynBar(){
+  const interviewed=S.personas.filter(p=>(S.interviews[p.id]||[]).length>0);
+  const btn=document.getElementById('btn-syn');
+  if(btn)btn.disabled=interviewed.length===0;
+}
+
+function renderSynthesisStep(){
+  const interviewed=S.personas.filter(p=>(S.interviews[p.id]||[]).filter(m=>m.role==='user').length>0);
+  document.getElementById('syn-bar').innerHTML=interviewed.length>0
+    ?interviewed.map(p=>`<div class="syn-chip">${p.avatar} <strong>${p.name.split(' ')[0]}</strong> <span style="color:var(--text-2)">${S.interviews[p.id].filter(m=>m.role==='user').length} questions</span></div>`).join('')
+    :'<span style="font-size:12px;color:var(--text-2)">No interviews conducted</span>';
+  if(S.synthesis)renderSynthesisHtml(S.synthesis);
+  updateSynBar();
+}
+
+async function runSynthesis(){
+  const interviewed=S.personas.filter(p=>(S.interviews[p.id]||[]).filter(m=>m.role==='user').length>0);
+  if(interviewed.length===0){alert('Please conduct at least one interview before synthesizing.');return}
+
+  showLoad('Analyzing interviews and synthesizing insights...');
+  const transcripts=interviewed.map(p=>{
+    const msgs=S.interviews[p.id];
+    const tr=msgs.map(m=>`${m.role==='user'?'Interviewer':p.name}: ${m.content}`).join('\n\n');
+    return`\n=== PERSONA: ${p.name} (${p.segment}, ${p.age} yrs, ${p.occupation}) ===\n${tr}`;
+  }).join('\n\n---\n');
+
+  const prompt=`You are a specialist in qualitative user research synthesis.
+
+Product: ${S.product||'not specified'}
+Research goal: ${S.goal}
+Personas interviewed: ${interviewed.length}
+
+INTERVIEW TRANSCRIPTS:
+${transcripts}
+
+Generate a structured, actionable synthesis report in Markdown. Include direct quotes from personas where relevant. Be specific.
+
+## Executive Summary
+3–4 lines summarizing the key findings and what they mean for the product.
+
+## Recurring Themes
+3–5 themes that appear across multiple interviews, with evidence (quotes) and implications.
+
+## Tensions and Contradictions
+What differs across segments? Where are there conflicting needs?
+
+## Jobs-to-be-Done Identified
+The main "jobs" users hire the product to do.
+
+## Barriers and Friction
+What prevents adoption, continued use, or full satisfaction?
+
+## Opportunities Identified
+3–4 concrete product, UX, or messaging opportunities derived from the interviews.
+
+## Next Steps
+3 concrete research or product actions to validate and deepen these findings.`;
+
+  try{
+    const res=await callClaude(prompt);
+    S.synthesis=res;
+    renderSynthesisHtml(S.synthesis);
+
+    // Second call: extract chart data
+    showLoad('Generating charts...');
+    const chartPrompt=`Based on this research synthesis, extract structured data for visualization. Return ONLY a valid JSON object, no other text.
+
+SYNTHESIS:
+${S.synthesis}
+
+PERSONAS: ${interviewed.map(p=>p.name.split(' ')[0]).join(', ')}
+
+Return this exact shape:
+{"themes":[{"label":"Short Theme Name","mentions":3,"sentiment":"negative"}],"personas":[{"name":"FirstName","pain":8,"tech":6,"readiness":4}]}
+
+Rules:
+- themes: up to 6, ordered by importance. label = max 4 words. mentions = 1–5. sentiment = positive | negative | neutral
+- personas: one entry per interviewed persona. pain/tech/readiness = 1–10
+- Return ONLY the JSON`;
+
+    const chartRes=await callClaude(chartPrompt);
+    try{
+      const chartData=extractJSON(chartRes);
+      if(chartData&&chartData.themes&&chartData.personas)renderCharts(chartData);
+    }catch(e){console.warn('Chart data parse failed:',e)}
+
+  }catch(e){
+    document.getElementById('synthesis-out').innerHTML=`<div class="alert alert-warn">⚠️ Error generating synthesis. Please try again.</div>`;
+  }finally{hideLoad()}
+}
+
+let chartThemesInst=null,chartRadarInst=null;
+
+function renderCharts(data){
+  document.getElementById('syn-charts').style.display='block';
+  if(chartThemesInst){chartThemesInst.destroy();chartThemesInst=null}
+  if(chartRadarInst){chartRadarInst.destroy();chartRadarInst=null}
+
+  const sentColor=s=>s==='positive'?'rgba(5,150,105,0.7)':s==='negative'?'rgba(220,38,38,0.7)':'rgba(79,70,229,0.7)';
+  const sentBorder=s=>s==='positive'?'#059669':s==='negative'?'#dc2626':'#4f46e5';
+
+  const tc=document.getElementById('chart-themes').getContext('2d');
+  chartThemesInst=new Chart(tc,{
+    type:'bar',
+    data:{
+      labels:data.themes.map(t=>t.label),
+      datasets:[{
+        label:'Mentions',
+        data:data.themes.map(t=>t.mentions),
+        backgroundColor:data.themes.map(t=>sentColor(t.sentiment)),
+        borderColor:data.themes.map(t=>sentBorder(t.sentiment)),
+        borderWidth:1.5,borderRadius:4
+      }]
+    },
+    options:{
+      indexAxis:'y',responsive:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.raw} mention${c.raw!==1?'s':''}`}}},
+      scales:{x:{beginAtZero:true,max:5,ticks:{stepSize:1},grid:{color:'rgba(0,0,0,0.05)'}},y:{grid:{display:false}}}
+    }
+  });
+
+  const personaColors=['rgba(79,70,229,0.2)','rgba(124,58,237,0.2)','rgba(8,145,178,0.2)','rgba(5,150,105,0.2)'];
+  const personaBorders=['#4f46e5','#7c3aed','#0891b2','#059669'];
+  const rc=document.getElementById('chart-radar').getContext('2d');
+  chartRadarInst=new Chart(rc,{
+    type:'radar',
+    data:{
+      labels:['Pain Level','Tech Savviness','Adoption Readiness'],
+      datasets:data.personas.map((p,i)=>({
+        label:p.name,
+        data:[p.pain,p.tech,p.readiness],
+        backgroundColor:personaColors[i%personaColors.length],
+        borderColor:personaBorders[i%personaBorders.length],
+        borderWidth:2,
+        pointBackgroundColor:personaBorders[i%personaBorders.length],
+        pointRadius:4
+      }))
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12}}},
+      scales:{r:{beginAtZero:true,max:10,ticks:{stepSize:2,font:{size:10}},grid:{color:'rgba(0,0,0,0.07)'},pointLabels:{font:{size:11}}}}
+    }
+  });
+}
+
+function renderSynthesisHtml(md){
+  const lines=md.split('\n');let html='';let inUl=false;let inOl=false;
+  for(const line of lines){
+    if(line.startsWith('## ')){if(inUl){html+='</ul>';inUl=false}if(inOl){html+='</ol>';inOl=false}html+=`<h2>${pi(line.slice(3))}</h2>`}
+    else if(line.startsWith('### ')){if(inUl){html+='</ul>';inUl=false}if(inOl){html+='</ol>';inOl=false}html+=`<h3>${pi(line.slice(4))}</h3>`}
+    else if(line.startsWith('> ')){if(inUl){html+='</ul>';inUl=false}html+=`<blockquote>${pi(line.slice(2))}</blockquote>`}
+    else if(line.match(/^[-*] /)){if(!inUl){html+='<ul>';inUl=true}html+=`<li>${pi(line.slice(2))}</li>`}
+    else if(line.match(/^\d+\. /)){if(!inOl){html+='<ol>';inOl=true}html+=`<li>${pi(line.replace(/^\d+\. /,''))}</li>`}
+    else if(line.trim()===''){if(inUl){html+='</ul>';inUl=false}if(inOl){html+='</ol>';inOl=false}}
+    else{if(inUl){html+='</ul>';inUl=false}if(inOl){html+='</ol>';inOl=false}if(line.trim())html+=`<p>${pi(line)}</p>`}
+  }
+  if(inUl)html+='</ul>';if(inOl)html+='</ol>';
+  document.getElementById('synthesis-out').innerHTML=`<div class="syn-content">${html}</div>`;
+}
+
+function pi(t){
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/_(.+?)_/g,'<em>$1</em>')
+    .replace(/"([^"]{5,100})"/g,'<em>"$1"</em>');
+}
+</script>
+</body>
+</html>
