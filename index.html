@@ -531,6 +531,13 @@ Persona number: ${i+1} of ${count}${imgNote}
 
 NAME RULES: Use American-sounding names (English-speaking, Western backgrounds). Every persona MUST have a completely unique first AND last name — absolutely no shared surnames or first names across any personas. Make names feel real and specific, not generic (avoid "John Smith", "Jane Doe", etc.).${usedNames?`\nNAMES ALREADY USED (do NOT reuse any part of these, not even the first name): ${usedNames}`:''}
 
+DEMOGRAPHIC DIVERSITY: For any field NOT explicitly stated in the user data (age, location, income, techLevel), you MUST vary it significantly from other personas. Do not cluster personas around the same city, age bracket, or salary range unless the data requires it. Spread across different life stages, geographies, and income levels to represent the realistic breadth of the user base.
+
+CONFIDENCE SCORING RULES — be strict and honest:
+- "high": this field was explicitly stated or directly quoted in the user data
+- "medium": this field can be reasonably inferred from context (e.g. role implies tech level)
+- "low": this field was NOT mentioned in the data — you are estimating it freely. Mark as "low" even if the estimate is plausible.
+
 IMPORTANT: Return ONLY the JSON object, nothing else. No explanation, no markdown, no code fences. Start with { and end with }
 
 {"id":"p${i+1}","name":"Full Name","age":30,"location":"City, Country","occupation":"Job Title","income":"salary range","techLevel":"Beginner|Intermediate|Advanced|Expert","segment":"Short Segment Name","background":"2 sentences: life context and relationship with this product","jtbd":"One sentence: the main job this person hires the product to do","goals":["goal1","goal2","goal3"],"pains":["pain1","pain2","pain3"],"behaviors":["digital behavior1","behavior2","behavior3"],"quote":"Authentic first-person quote capturing this persona","tags":["tag1","tag2","tag3"]}`;
@@ -984,13 +991,6 @@ function autoSave(){
   saveSessions(sessions);
 }
 
-function deleteSession(id,e){
-  e.stopPropagation();
-  if(!confirm('Delete this session?'))return;
-  saveSessions(getSessions().filter(s=>s.id!==id));
-  renderSessionsList();
-}
-
 function resumeSession(data){
   const session=typeof data==='string'?JSON.parse(data):data;
   S.sessionId=session.id;
@@ -1013,6 +1013,11 @@ function resumeSession(data){
   }else{nav(1)}
 }
 
+function resumeSessionById(id){
+  const session=getSessions().find(s=>s.id===id);
+  if(session)resumeSession(session);
+}
+
 function startNewSession(){
   S.sessionId='session_'+Date.now();
   S.step=1;S.product='';S.data='';S.goal='';S.count=3;
@@ -1028,25 +1033,43 @@ function renderSessionsList(){
   const sessions=getSessions();
   const list=document.getElementById('sessions-list');
   if(!list)return;
+
   if(sessions.length===0){
     list.innerHTML='<div class="so-empty">No saved sessions yet.<br>Complete an interview to save automatically.</div>';
+    list.onclick=null;
     return;
   }
+
   list.innerHTML=sessions.map(s=>{
     const date=new Date(s.updatedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     const qCount=Object.values(s.interviews||{}).reduce((a,m)=>a+m.filter(x=>x.role==='user').length,0);
     const icon=s.synthesis?'📋':qCount>0?'💬':'👥';
     const status=s.synthesis?'Synthesized':qCount>0?`${qCount} question${qCount>1?'s':''} asked`:`${(s.personas||[]).length} persona${(s.personas||[]).length!==1?'s':''} generated`;
-    const safeData=JSON.stringify(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
-    return`<div class="session-item" onclick="resumeSession(JSON.parse(this.dataset.s))" data-s="${safeData}">
-      <div class="si-icon">${icon}</div>
-      <div class="si-info">
+    return`<div class="session-item" data-sid="${s.id}">
+      <div class="si-icon" style="pointer-events:none">${icon}</div>
+      <div class="si-info" style="pointer-events:none">
         <div class="si-name">${s.name||'Untitled'}</div>
         <div class="si-meta">${status} · ${date}</div>
       </div>
-      <button class="si-del" onclick="deleteSession('${s.id}',event)" title="Delete">×</button>
+      <button class="si-del" data-del="${s.id}" title="Delete">×</button>
     </div>`;
   }).join('');
+
+  // Event delegation — one listener on the container, no inline handlers
+  list.onclick=function(e){
+    const delBtn=e.target.closest('[data-del]');
+    if(delBtn){
+      e.stopPropagation();
+      const id=delBtn.dataset.del;
+      if(confirm('Delete this session?')){
+        saveSessions(getSessions().filter(s=>s.id!==id));
+        renderSessionsList();
+      }
+      return;
+    }
+    const item=e.target.closest('[data-sid]');
+    if(item) resumeSessionById(item.dataset.sid);
+  };
 }
 
 function showSessionsOverlay(){
