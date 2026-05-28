@@ -178,6 +178,11 @@ textarea:focus,input:focus,select:focus{border-color:var(--accent);box-shadow:0 
 .so-new{width:100%;padding:11px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background 0.15s}
 .so-new:hover{background:#4338ca}
 .so-empty{text-align:center;padding:20px;color:#6b6560;font-size:13px}
+/* Confidence chip */
+.conf-chip{display:inline-flex;align-items:center;gap:5px;margin-top:7px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:600;border:1px solid;opacity:.85}
+.conf-chip.high{background:#f0fdf4;color:#166534;border-color:#bbf7d0}
+.conf-chip.medium{background:#fffbeb;color:#92400e;border-color:#fde68a}
+.conf-chip.low{background:#fef2f2;color:#991b1b;border-color:#fecaca}
 /* Sessions header button */
 .btn-sessions{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid #e0dbd3;background:#fff;color:#6b6560;font-family:inherit;transition:all 0.15s;margin-left:12px}
 .btn-sessions:hover{border-color:#4f46e5;color:#4f46e5;background:#eef2ff}
@@ -619,10 +624,11 @@ function renderChat(id){
     <div class="chat-wrap" id="cw-${id}">
       ${msgs.length===0
         ?`<div style="margin:auto;text-align:center;color:var(--text-2)"><div style="font-size:30px;margin-bottom:8px">💬</div><div style="font-size:13px;font-weight:700;color:var(--text-dark);margin-bottom:3px">Start the interview</div><div style="font-size:11px">Ask open-ended questions to explore motivations and pain points</div></div>`
-        :msgs.map(m=>m.role==='user'
-          ?`<div class="msg u"><div class="mava" style="background:var(--surface-2)">👤</div><div class="mb">${esc(m.content)}</div></div>`
-          :`<div class="msg p"><div class="mava" style="background:${p.color}20;border-color:${p.color}30">${p.avatar}</div><div class="mb">${esc(m.content)}</div></div>`
-        ).join('')}
+        :msgs.map(m=>{
+          if(m.role==='user') return`<div class="msg u"><div class="mava" style="background:var(--surface-2)">👤</div><div class="mb">${esc(m.content)}</div></div>`;
+          const {text,pct,reason,level}=parseConfidence(m.content);
+          return`<div class="msg p"><div class="mava" style="background:${p.color}20;border-color:${p.color}30">${p.avatar}</div><div class="mb">${esc(text)}${confChipHtml(pct,reason,level)}</div></div>`;
+        }).join('')}
     </div>
     <div class="ci-row">
       <textarea id="qi" placeholder="Ask ${p.name.split(' ')[0]} a question..." onkeydown="handleKey(event,'${id}')"></textarea>
@@ -685,7 +691,10 @@ PROFILE:
 ${hist.length?`CONVERSATION HISTORY:\n${hist.map(m=>`${m.role==='user'?'Interviewer':p.name}: ${m.content}`).join('\n\n')}\n\n`:''}INTERVIEWER QUESTION:
 ${q}
 
-Respond AS ${p.name} would — in first person, authentically, using language and vocabulary consistent with your profile. Include personal details, opinions, and life context. Be natural, spontaneous, and human. You may include hesitations or nuance. DO NOT break character. DO NOT reveal you are an AI. Keep it concise: 1–2 short paragraphs maximum.`;
+Respond AS ${p.name} would — in first person, authentically, using language and vocabulary consistent with your profile. Include personal details, opinions, and life context. Be natural, spontaneous, and human. You may include hesitations or nuance. DO NOT break character. DO NOT reveal you are an AI. Keep it concise: 1–2 short paragraphs maximum.
+
+After your response, on a new line, add exactly this tag (not part of the spoken text):
+[confidence:XX%·one sentence explaining how grounded this answer is in the provided profile data vs. inferred]`;
   try{
     const ans=await callClaude(prompt, S_imgs);
     S.interviews[id].push({role:'persona',content:ans});
@@ -769,7 +778,10 @@ What prevents adoption, continued use, or full satisfaction?
 3–4 concrete product, UX, or messaging opportunities derived from the interviews.
 
 ## Next Steps
-3 concrete research or product actions to validate and deepen these findings.`;
+3 concrete research or product actions to validate and deepen these findings.
+
+After the report, on a new line, add exactly this tag:
+[confidence:XX%·one sentence on how grounded this synthesis is given the breadth and depth of the interview data]`;
 
   try{
     const res=await callClaude(prompt);
@@ -862,7 +874,9 @@ function renderCharts(data){
 }
 
 function renderSynthesisHtml(md){
-  const lines=md.split('\n');let html='';let inUl=false;let inOl=false;
+  const {text:cleanMd,pct,reason,level}=parseConfidence(md);
+  const chip=confChipHtml(pct,reason,level);
+  const lines=cleanMd.split('\n');let html='';let inUl=false;let inOl=false;
   for(const line of lines){
     if(line.startsWith('## ')){if(inUl){html+='</ul>';inUl=false}if(inOl){html+='</ol>';inOl=false}html+=`<h2>${pi(line.slice(3))}</h2>`}
     else if(line.startsWith('### ')){if(inUl){html+='</ul>';inUl=false}if(inOl){html+='</ol>';inOl=false}html+=`<h3>${pi(line.slice(4))}</h3>`}
@@ -873,7 +887,7 @@ function renderSynthesisHtml(md){
     else{if(inUl){html+='</ul>';inUl=false}if(inOl){html+='</ol>';inOl=false}if(line.trim())html+=`<p>${pi(line)}</p>`}
   }
   if(inUl)html+='</ul>';if(inOl)html+='</ol>';
-  document.getElementById('synthesis-out').innerHTML=`<div class="syn-content">${html}</div>`;
+  document.getElementById('synthesis-out').innerHTML=`<div class="syn-content">${html}</div>${chip?`<div style="margin-top:14px">${chip}</div>`:''}`;
 }
 
 function pi(t){
@@ -882,6 +896,23 @@ function pi(t){
     .replace(/\*(.+?)\*/g,'<em>$1</em>')
     .replace(/_(.+?)_/g,'<em>$1</em>')
     .replace(/"([^"]{5,100})"/g,'<em>"$1"</em>');
+}
+
+// ── Confidence line parser ─────────────────────────────────────────────────
+function parseConfidence(raw){
+  const m=raw.match(/\[confidence:(\d+)%[·•·]([^\]]+)\]\s*$/i);
+  if(!m)return{text:raw,pct:null,reason:null,level:null};
+  const pct=parseInt(m[1]);
+  const reason=m[2].trim();
+  const level=pct>=80?'high':pct>=60?'medium':'low';
+  const text=raw.slice(0,m.index).trimEnd();
+  return{text,pct,reason,level};
+}
+
+function confChipHtml(pct,reason,level){
+  if(!pct)return'';
+  const icon=level==='high'?'●':level==='medium'?'◑':'○';
+  return`<div><span class="conf-chip ${level}" title="${esc(reason)}">${icon} confidence: ${pct}% · ${esc(reason)}</span></div>`;
 }
 
 // ── PDF Export ─────────────────────────────────────────────────────────────
