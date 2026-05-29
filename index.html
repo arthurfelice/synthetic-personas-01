@@ -255,6 +255,7 @@ function checkPw(){
     <div class="sep">›</div>
     <div class="step locked" data-s="4" onclick="nav(4)"><div class="sn">4</div><div class="sl">Synthesis</div></div>
   </div>
+  <img src="/workability-logo.png" alt="Workability Lab" style="height:18px;mix-blend-mode:multiply;opacity:.5;margin-left:16px;flex-shrink:0">
 </div>
 
 <div class="main">
@@ -394,6 +395,10 @@ Examples:
 
 </div><!-- /main -->
 
+<footer style="border-top:1px solid var(--border);margin-top:48px;padding:28px 24px;display:flex;align-items:center;justify-content:center">
+  <img src="/workability-logo.png" alt="Workability Lab" style="height:28px;mix-blend-mode:multiply;opacity:.45">
+</footer>
+
 <script>
 // ── State ──────────────────────────────────────────────────────────────────
 const S={step:1,product:'',data:'',goal:'product',count:3,personas:[],selId:null,activeId:null,interviews:{},synthesis:null};
@@ -507,6 +512,25 @@ function normalizePersona(p,i){
   };
 }
 
+// ── Step 1 button state ────────────────────────────────────────────────────
+function updateStep1Buttons(){
+  const hasPersonas=S.personas.length>0;
+  const btnGen=document.querySelector('[onclick="generatePersonas(false)"]');
+  const btnAdd=document.getElementById('btn-append');
+  if(!btnGen||!btnAdd)return;
+  if(hasPersonas){
+    // "Add More" becomes primary, "Generate" becomes secondary
+    btnAdd.className='btn btn-p';
+    btnGen.className='btn btn-s';
+    btnGen.style.opacity='0.6';
+    btnAdd.textContent='+ Add More Personas';
+  }else{
+    btnGen.className='btn btn-p';
+    btnAdd.className='btn btn-s';
+    btnGen.style.opacity='';
+  }
+}
+
 // ── Navigation ─────────────────────────────────────────────────────────────
 function nav(n){
   if(n>1&&S.personas.length===0)return;
@@ -520,6 +544,7 @@ function nav(n){
     else if(sn<n)s.classList.add('done');
     else if(S.personas.length===0)s.classList.add('locked');
   });
+  if(n===1)updateStep1Buttons();
   if(n===3)renderInterviewStep();
   if(n===4)renderSynthesisStep();
 }
@@ -590,6 +615,7 @@ IMPORTANT: Return ONLY the JSON object, nothing else. No explanation, no markdow
   S.personas=personas;unlockAll();renderPersonasGrid();
   document.getElementById('btn-append').style.display='';
   document.getElementById('append-hint').style.display='';
+  updateStep1Buttons();
   nav(2);hideLoad();autoSave();
 }
 
