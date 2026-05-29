@@ -169,24 +169,36 @@ textarea:focus,input:focus,select:focus{border-color:var(--accent);box-shadow:in
 .pw-err{font-size:11px;color:#8a2020;margin-top:8px;min-height:16px;letter-spacing:0.03em}
 .pw-btn{width:100%;margin-top:16px;padding:10px;background:var(--text-dark);color:var(--bg);border:1px solid var(--text-dark);font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;font-family:inherit;transition:background 0.12s;border-radius:0}
 .pw-btn:hover{background:#333330}
-/* Sessions overlay */
-#sessions-overlay{position:fixed;inset:0;background:rgba(232,231,226,.97);z-index:9998;display:none;align-items:center;justify-content:center}
-#sessions-overlay.on{display:flex}
-.so-box{background:var(--surface);border:1px solid var(--border);padding:36px;width:500px;max-width:calc(100vw - 40px);max-height:80vh;display:flex;flex-direction:column}
-.so-title{font-size:15px;font-weight:600;letter-spacing:0.01em;margin-bottom:4px}
-.so-sub{font-size:11px;color:var(--text-2);margin-bottom:20px;letter-spacing:0.04em;text-transform:uppercase}
-.sessions-list{overflow-y:auto;flex:1;margin-bottom:14px}
-.session-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border);cursor:pointer;margin-bottom:1px;transition:background 0.12s;background:var(--surface)}
-.session-item:hover{background:var(--surface-2)}
-.si-icon{font-size:22px;flex-shrink:0;opacity:.7}
-.si-info{flex:1;min-width:0}
-.si-name{font-size:13px;font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.si-meta{font-size:10px;color:var(--text-2);letter-spacing:0.04em;text-transform:uppercase}
-.si-del{width:28px;height:28px;border:none;background:transparent;cursor:pointer;color:var(--text-2);font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;transition:color 0.12s}
-.si-del:hover{color:var(--text-dark)}
-.so-new{width:100%;padding:11px;background:var(--text-dark);color:var(--bg);border:1px solid var(--text-dark);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;font-family:inherit;transition:background 0.12s;border-radius:0}
-.so-new:hover{background:#333330}
-.so-empty{text-align:center;padding:20px;color:var(--text-2);font-size:12px}
+/* Project home page */
+#pg-home{display:none;min-height:100vh;background:var(--bg)}
+#pg-home.on{display:block}
+.home-bar{background:var(--bg);border-bottom:1px solid var(--border);padding:0 32px;height:54px;display:flex;align-items:center;gap:16px}
+.home-bar-title{font-size:13px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:var(--text-dark)}
+.home-bar-logo{margin-right:auto}
+.home-main{max-width:1280px;margin:0 auto;padding:40px 32px}
+.home-section-label{font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-2);margin-bottom:20px}
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.proj-card{background:var(--surface);border:1px solid var(--border);cursor:pointer;transition:border-color 0.12s,background 0.12s;display:flex;flex-direction:column;position:relative}
+.proj-card:hover{border-color:var(--accent);background:var(--surface)}
+.proj-card.new-card{border:1px dashed var(--border);background:transparent;align-items:center;justify-content:center;min-height:220px}
+.proj-card.new-card:hover{border-color:var(--accent);background:var(--surface)}
+.pc-preview{height:152px;background:#111110;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;border-bottom:1px solid var(--border);position:relative}
+.pc-avatars{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;padding:16px}
+.pc-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;border:2px solid rgba(255,255,255,.1)}
+.pc-body{padding:14px 16px;flex:1}
+.pc-title{font-size:13px;font-weight:600;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-dark)}
+.pc-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pc-badge{font-size:9px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:2px 7px;border:1px solid}
+.pc-badge.synth{color:var(--accent);border-color:var(--accent)}
+.pc-badge.progress{color:var(--success);border-color:var(--success)}
+.pc-badge.draft{color:var(--text-2);border-color:var(--border)}
+.pc-date{font-size:10px;color:var(--text-2);letter-spacing:0.03em}
+.pc-del{position:absolute;top:8px;right:8px;width:24px;height:24px;border:none;background:rgba(0,0,0,.4);color:#fff;font-size:14px;cursor:pointer;display:none;align-items:center;justify-content:center;line-height:1;border-radius:2px}
+.proj-card:hover .pc-del{display:flex}
+.pc-del:hover{background:rgba(180,40,40,.8)}
+.new-card-inner{text-align:center;padding:24px}
+.new-card-plus{width:44px;height:44px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 12px;color:var(--text-2)}
+.new-card-label{font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-2)}
 /* Confidence chip */
 .conf-chip{display:inline-flex;align-items:center;gap:5px;margin-top:7px;padding:3px 9px;font-size:10px;font-weight:600;border:1px solid;letter-spacing:0.03em}
 .conf-chip.high{background:transparent;color:var(--success);border-color:var(--success)}
@@ -229,13 +241,23 @@ function checkPw(){
 }
 </script>
 
-<!-- Sessions overlay -->
-<div id="sessions-overlay">
-  <div class="so-box">
-    <div class="so-title">📋 My Sessions</div>
-    <div class="so-sub">Resume a previous session or start a new one</div>
-    <div class="sessions-list" id="sessions-list"></div>
-    <button class="so-new" onclick="startNewSession()">+ New Session</button>
+<!-- Project Home -->
+<div id="pg-home">
+  <div class="home-bar">
+    <img src="/workability-logo.png" alt="Workability Lab" class="home-bar-logo" style="height:18px">
+    <div class="home-bar-title">Synthetic Personas</div>
+    <button class="btn btn-p" onclick="startNewSession()" style="font-size:10px;padding:7px 14px">+ New Project</button>
+  </div>
+  <div class="home-main">
+    <div class="home-section-label">Your projects</div>
+    <div class="proj-grid" id="proj-grid">
+      <div class="proj-card new-card" onclick="startNewSession()">
+        <div class="new-card-inner">
+          <div class="new-card-plus">+</div>
+          <div class="new-card-label">New Project</div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -246,7 +268,7 @@ function checkPw(){
 
 <div class="header">
   <div class="logo"><span>Synthetic</span> <em>Personas</em></div>
-  <button class="btn-sessions" onclick="showSessionsOverlay()">📋 Sessions</button>
+  <button class="btn-sessions" onclick="showHomePage()">← Projects</button>
   <div class="steps">
     <div class="step active" data-s="1" onclick="nav(1)"><div class="sn">1</div><div class="sl">Data</div></div>
     <div class="sep">›</div>
@@ -1094,7 +1116,7 @@ function resumeSession(data){
   const pi=document.getElementById('in-product');if(pi)pi.value=S.product;
   const gi=document.getElementById('in-goal');if(gi)gi.value=S.goal;
   const ci=document.getElementById('in-count');if(ci)ci.value=S.count;
-  hideSessionsOverlay();
+  hideHomePage();
   if(S.personas.length>0){
     unlockAll();
     renderPersonasGrid();
@@ -1106,7 +1128,7 @@ function resumeSession(data){
 
 function resumeSessionById(id){
   const session=getSessions().find(s=>s.id===id);
-  if(session)resumeSession(session);
+  if(session){resumeSession(session);hideHomePage();}
 }
 
 function startNewSession(){
@@ -1116,67 +1138,84 @@ function startNewSession(){
   const pi=document.getElementById('in-product');if(pi)pi.value='';
   const di=document.getElementById('in-data');if(di)di.value='';
   const gi=document.getElementById('in-goal');if(gi)gi.value='';
-  hideSessionsOverlay();
+  hideHomePage();
   nav(1);
 }
 
-function renderSessionsList(){
+function renderHomeProjects(){
   const sessions=getSessions();
-  const list=document.getElementById('sessions-list');
-  if(!list)return;
+  const grid=document.getElementById('proj-grid');
+  if(!grid)return;
 
-  if(sessions.length===0){
-    list.innerHTML='<div class="so-empty">No saved sessions yet.<br>Complete an interview to save automatically.</div>';
-    list.onclick=null;
-    return;
-  }
+  const COLORS_DARK=['#1a1aff22','#7c3aed22','#0891b222','#05966922','#d9770622'];
 
-  list.innerHTML=sessions.map(s=>{
+  const cards=sessions.map(s=>{
     const date=new Date(s.updatedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     const qCount=Object.values(s.interviews||{}).reduce((a,m)=>a+m.filter(x=>x.role==='user').length,0);
-    const icon=s.synthesis?'📋':qCount>0?'💬':'👥';
-    const status=s.synthesis?'Synthesized':qCount>0?`${qCount} question${qCount>1?'s':''} asked`:`${(s.personas||[]).length} persona${(s.personas||[]).length!==1?'s':''} generated`;
-    return`<div class="session-item" data-sid="${s.id}">
-      <div class="si-icon" style="pointer-events:none">${icon}</div>
-      <div class="si-info" style="pointer-events:none">
-        <div class="si-name">${s.name||'Untitled'}</div>
-        <div class="si-meta">${status} · ${date}</div>
+    const personas=s.personas||[];
+    const badge=s.synthesis
+      ?`<span class="pc-badge synth">Synthesized</span>`
+      :qCount>0
+        ?`<span class="pc-badge progress">${qCount} question${qCount!==1?'s':''}</span>`
+        :personas.length>0
+          ?`<span class="pc-badge draft">${personas.length} persona${personas.length!==1?'s':''}</span>`
+          :`<span class="pc-badge draft">Draft</span>`;
+
+    const avatarHtml=personas.length>0
+      ?personas.slice(0,4).map((p,i)=>`<div class="pc-avatar" style="background:${p.color||COLORS_DARK[i%5]}44">${p.avatar||'👤'}</div>`).join('')
+      :`<div style="font-size:32px;opacity:.3">🎭</div>`;
+
+    return`<div class="proj-card" data-sid="${s.id}">
+      <div class="pc-preview">
+        <div class="pc-avatars">${avatarHtml}</div>
+        <button class="pc-del" data-del="${s.id}" title="Delete project">×</button>
       </div>
-      <button class="si-del" data-del="${s.id}" title="Delete">×</button>
+      <div class="pc-body">
+        <div class="pc-title">${s.name||'Untitled Project'}</div>
+        <div class="pc-row">
+          ${badge}
+          <div class="pc-date">${date}</div>
+        </div>
+      </div>
     </div>`;
   }).join('');
 
-  // Event delegation — one listener on the container, no inline handlers
-  list.onclick=function(e){
+  grid.innerHTML=cards+`<div class="proj-card new-card" onclick="startNewSession()">
+    <div class="new-card-inner">
+      <div class="new-card-plus">+</div>
+      <div class="new-card-label">New Project</div>
+    </div>
+  </div>`;
+
+  grid.onclick=function(e){
     const delBtn=e.target.closest('[data-del]');
     if(delBtn){
       e.stopPropagation();
-      const id=delBtn.dataset.del;
-      if(confirm('Delete this session?')){
-        saveSessions(getSessions().filter(s=>s.id!==id));
-        renderSessionsList();
+      if(confirm('Delete this project?')){
+        saveSessions(getSessions().filter(s=>s.id!==delBtn.dataset.del));
+        renderHomeProjects();
       }
       return;
     }
-    const item=e.target.closest('[data-sid]');
-    if(item) resumeSessionById(item.dataset.sid);
+    const card=e.target.closest('[data-sid]');
+    if(card) resumeSessionById(card.dataset.sid);
   };
 }
 
-function showSessionsOverlay(){
-  renderSessionsList();
-  document.getElementById('sessions-overlay').classList.add('on');
+function showHomePage(){
+  renderHomeProjects();
+  document.getElementById('pg-home').classList.add('on');
+  document.getElementById('loading').classList.remove('on');
 }
-function hideSessionsOverlay(){
-  document.getElementById('sessions-overlay').classList.remove('on');
+function hideHomePage(){
+  document.getElementById('pg-home').classList.remove('on');
 }
 
 // ── Init ───────────────────────────────────────────────────────────────────
 S.sessionId='session_'+Date.now();
 
 window.afterAuth=function(){
-  const sessions=getSessions();
-  if(sessions.length>0)showSessionsOverlay();
+  showHomePage();
 };
 
 // If already authenticated (returning user), run afterAuth after page load
