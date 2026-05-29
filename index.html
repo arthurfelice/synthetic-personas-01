@@ -41,7 +41,7 @@ body{font-family:'Space Grotesk',-apple-system,BlinkMacSystemFont,sans-serif;bac
 .sn{width:20px;height:20px;border-radius:50%;background:transparent;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;transition:all 0.2s}
 .sl{font-size:11px;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;color:var(--text-dark)}
 .sep{color:var(--border);padding:0 4px;font-size:14px;user-select:none}
-.main{max-width:880px;margin:0 auto;padding:32px 24px}
+.main{max-width:880px;margin:0 auto;padding:32px 24px 72px}
 .card{background:var(--surface);border:1px solid var(--border);padding:28px;box-shadow:none}
 .card-title{font-size:16px;font-weight:600;letter-spacing:0.01em;margin-bottom:4px}
 .card-sub{font-size:12px;color:var(--text-2);margin-bottom:22px;line-height:1.6}
@@ -183,7 +183,7 @@ textarea:focus,input:focus,select:focus{border-color:var(--accent);box-shadow:in
 .home-bar{background:var(--bg);border-bottom:1px solid var(--border);padding:0 32px;height:54px;display:flex;align-items:center;gap:16px}
 .home-bar-title{font-size:13px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:var(--text-dark)}
 .home-bar-logo{margin-right:auto}
-.home-main{max-width:1280px;margin:0 auto;padding:40px 32px}
+.home-main{max-width:1280px;margin:0 auto;padding:40px 32px 72px}
 .home-section-label{font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-2);margin-bottom:20px}
 .proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
 .proj-card{background:var(--surface);border:1px solid var(--border);cursor:pointer;transition:border-color 0.12s,background 0.12s;display:flex;flex-direction:column;position:relative}
@@ -426,8 +426,10 @@ Examples:
 
 </div><!-- /main -->
 
-<footer style="border-top:1px solid var(--border);margin-top:48px;padding:28px 24px;display:flex;align-items:center;justify-content:center">
-  <img src="/workability-logo.png" alt="Workability Lab" style="height:26px">
+<footer id="app-footer" style="position:fixed;bottom:0;left:0;right:0;height:44px;background:var(--bg);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:200">
+  <img src="/workability-logo.png" alt="Workability Lab" style="height:16px">
+  <span id="footer-session" style="font-size:10px;color:var(--text-2);letter-spacing:0.04em;text-transform:uppercase;display:none"></span>
+  <span style="font-size:10px;color:var(--text-2);letter-spacing:0.04em">Synthetic Personas · AI Research Tool · © 2026 Workability Lab</span>
 </footer>
 
 <script>
@@ -1173,6 +1175,9 @@ function autoSave(){
   if(idx>=0){sessions[idx]=session}
   else{sessions.unshift(session);if(sessions.length>MAX_SESSIONS)sessions.pop()}
   saveSessions(sessions);
+  // Update footer session name
+  const fs=document.getElementById('footer-session');
+  if(fs&&S.product){fs.textContent=S.product;fs.style.display='';}
 }
 
 function resumeSession(data){
