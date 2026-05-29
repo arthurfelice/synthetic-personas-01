@@ -1285,6 +1285,8 @@ function showHomePage(){
   renderHomeProjects();
   document.getElementById('pg-home').classList.add('on');
   document.getElementById('loading').classList.remove('on');
+  const fs=document.getElementById('footer-session');
+  if(fs){fs.textContent='';fs.style.display='none';}
 }
 function hideHomePage(){
   document.getElementById('pg-home').classList.remove('on');
