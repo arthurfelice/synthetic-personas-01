@@ -202,7 +202,7 @@ textarea:focus,input:focus,select:focus{border-color:var(--accent);box-shadow:in
 <!-- Password gate -->
 <div id="pw-gate">
   <div class="pw-box">
-    <img src="/workability-logo.png" alt="Workability Lab" style="height:36px;mix-blend-mode:multiply;opacity:.7;margin:0 auto 24px;display:block">
+    <img src="/workability-logo.png" alt="Workability Lab" style="height:36px;display:block;margin:0 auto 24px;background:#fff;padding:6px 10px">
     <div class="pw-logo">Synthetic <em>Personas</em></div>
     <div class="pw-sub">Enter the access password to continue</div>
     <input type="password" id="pw-input" placeholder="Password" onkeydown="if(event.key==='Enter')checkPw()" autofocus>
@@ -256,7 +256,7 @@ function checkPw(){
     <div class="sep">›</div>
     <div class="step locked" data-s="4" onclick="nav(4)"><div class="sn">4</div><div class="sl">Synthesis</div></div>
   </div>
-  <img src="/workability-logo.png" alt="Workability Lab" style="height:18px;mix-blend-mode:multiply;opacity:.5;margin-left:16px;flex-shrink:0">
+  <img src="/workability-logo.png" alt="Workability Lab" style="height:18px;margin-left:16px;flex-shrink:0;mix-blend-mode:multiply;background:#fff">
 </div>
 
 <div class="main">
@@ -397,7 +397,7 @@ Examples:
 </div><!-- /main -->
 
 <footer style="border-top:1px solid var(--border);margin-top:48px;padding:28px 24px;display:flex;align-items:center;justify-content:center">
-  <img src="/workability-logo.png" alt="Workability Lab" style="height:28px;mix-blend-mode:multiply;opacity:.45">
+  <img src="/workability-logo.png" alt="Workability Lab" style="height:28px;mix-blend-mode:multiply;background:#fff;opacity:.7">
 </footer>
 
 <script>
@@ -509,7 +509,8 @@ function normalizePersona(p,i){
     quote:p.quote||p.Quote||'—',
     tags:arr(p.tags||p.Tags||[]),
     color:COLORS[i%COLORS.length],
-    avatar:AVATARS[i%AVATARS.length]
+    avatar:AVATARS[i%AVATARS.length],
+    confidence:p._confidence||{}
   };
 }
 
@@ -594,12 +595,13 @@ DEMOGRAPHIC DIVERSITY: For any field NOT explicitly stated in the user data (age
 
 CONFIDENCE SCORING RULES — be strict and honest:
 - "high": this field was explicitly stated or directly quoted in the user data
-- "medium": this field can be reasonably inferred from context (e.g. role implies tech level)
-- "low": this field was NOT mentioned in the data — you are estimating it freely. Mark as "low" even if the estimate is plausible.
+- "medium": this field can be reasonably inferred from context or is a well-known pattern from Claude's training
+- "low": this field was NOT mentioned in the data — Claude is estimating freely. Mark as "low" even if plausible.
+For list fields (goals, pains, behaviors), rate EACH item individually as an array in the same order as the items.
 
 IMPORTANT: Return ONLY the JSON object, nothing else. No explanation, no markdown, no code fences. Start with { and end with }
 
-{"id":"p${totalIdx+1}","name":"Full Name","age":30,"location":"City, Country","occupation":"Job Title","income":"salary range","techLevel":"Beginner|Intermediate|Advanced|Expert","segment":"Short Segment Name","background":"2 sentences: life context and relationship with this product","jtbd":"One sentence: the main job this person hires the product to do","goals":["goal1","goal2","goal3"],"pains":["pain1","pain2","pain3"],"behaviors":["digital behavior1","behavior2","behavior3"],"quote":"Authentic first-person quote capturing this persona","tags":["tag1","tag2","tag3"]}`;
+{"id":"p${totalIdx+1}","name":"Full Name","age":30,"location":"City, Country","occupation":"Job Title","income":"salary range","techLevel":"Beginner|Intermediate|Advanced|Expert","segment":"Short Segment Name","background":"2 sentences","jtbd":"One sentence","goals":["goal1","goal2","goal3"],"pains":["pain1","pain2","pain3"],"behaviors":["behavior1","behavior2","behavior3"],"quote":"First-person quote","tags":["tag1","tag2","tag3"],"_confidence":{"age":"high|medium|low","location":"high|medium|low","occupation":"high|medium|low","income":"high|medium|low","techLevel":"high|medium|low","background":"high|medium|low","jtbd":"high|medium|low","goals":["high|medium|low","high|medium|low","high|medium|low"],"pains":["high|medium|low","high|medium|low","high|medium|low"],"behaviors":["high|medium|low","high|medium|low","high|medium|low"]}}`;
     try{
       const text=await callClaude(prompt, S_imgs);
       const raw=extractJSON(text);
@@ -648,19 +650,20 @@ function selPersona(id){
         <button class="btn btn-g" style="margin-left:auto;color:#fff;opacity:.8" onclick="startInterview('${p.id}')">🎙️ Interview</button>
       </div>
       <div class="pd-body">
+        ${confLegendHtml()}
         <div class="dg">
-          <div class="di"><label>Age</label><p>${p.age} yrs</p></div>
-          <div class="di"><label>Location</label><p>${p.location}</p></div>
-          <div class="di"><label>Income</label><p>${p.income||'—'}</p></div>
-          <div class="di"><label>Tech level</label><p>${p.techLevel||'—'}</p></div>
+          <div class="di"><label>Age</label><p>${p.age} yrs${confDot((p.confidence||{}).age)}</p></div>
+          <div class="di"><label>Location</label><p>${p.location}${confDot((p.confidence||{}).location)}</p></div>
+          <div class="di"><label>Income</label><p>${p.income||'—'}${confDot((p.confidence||{}).income)}</p></div>
+          <div class="di"><label>Tech level</label><p>${p.techLevel||'—'}${confDot((p.confidence||{}).techLevel)}</p></div>
         </div>
-        <div class="ds"><label>Background</label><p style="font-size:13px;line-height:1.65;color:var(--text-2)">${p.background}</p></div>
-        <div class="ds"><label>Job-to-be-done</label><p style="font-size:13px;line-height:1.65">${p.jtbd}</p></div>
+        <div class="ds"><label>Background</label><p style="font-size:13px;line-height:1.65;color:var(--text-2)">${p.background}${confDot((p.confidence||{}).background)}</p></div>
+        <div class="ds"><label>Job-to-be-done</label><p style="font-size:13px;line-height:1.65">${p.jtbd}${confDot((p.confidence||{}).jtbd)}</p></div>
         <div class="dg">
-          <div class="ds"><label>Goals</label><ul class="dl">${(p.goals||[]).map(g=>`<li>${g}</li>`).join('')}</ul></div>
-          <div class="ds"><label>Pain Points</label><ul class="dl">${(p.pains||[]).map(g=>`<li>${g}</li>`).join('')}</ul></div>
+          <div class="ds"><label>Goals</label><ul class="dl">${(p.goals||[]).map((g,i)=>`<li>${g}${itemDot((p.confidence||{}).goals,i)}</li>`).join('')}</ul></div>
+          <div class="ds"><label>Pain Points</label><ul class="dl">${(p.pains||[]).map((g,i)=>`<li>${g}${itemDot((p.confidence||{}).pains,i)}</li>`).join('')}</ul></div>
         </div>
-        <div class="ds"><label>Behaviors</label><ul class="dl">${(p.behaviors||[]).map(g=>`<li>${g}</li>`).join('')}</ul></div>
+        <div class="ds"><label>Behaviors</label><ul class="dl">${(p.behaviors||[]).map((g,i)=>`<li>${g}${itemDot((p.confidence||{}).behaviors,i)}</li>`).join('')}</ul></div>
       </div>
     </div>`;
 }
@@ -966,6 +969,31 @@ function pi(t){
     .replace(/\*(.+?)\*/g,'<em>$1</em>')
     .replace(/_(.+?)_/g,'<em>$1</em>')
     .replace(/"([^"]{5,100})"/g,'<em>"$1"</em>');
+}
+
+// ── Confidence dot helpers ─────────────────────────────────────────────────
+function confDot(level,inline=false){
+  if(!level)return'';
+  const map={high:'#059669',medium:'#d97706',low:'#dc2626'};
+  const label={high:'From your data',medium:'Inferred / Claude training',low:'Estimated — verify'};
+  const c=map[level]||'#9ca3af';
+  const l=label[level]||level;
+  const size=inline?'6px':'7px';
+  const margin=inline?'0 0 0 4px':'0 0 0 5px';
+  return`<span title="${l}" style="display:inline-block;width:${size};height:${size};border-radius:50%;background:${c};margin:${margin};vertical-align:middle;cursor:help;flex-shrink:0"></span>`;
+}
+function itemDot(conf,index){
+  if(!conf)return'';
+  const level=Array.isArray(conf)?conf[index]:conf;
+  return confDot(level,true);
+}
+function confLegendHtml(){
+  return`<div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;padding:8px 12px;background:var(--surface-2);border:1px solid var(--border);font-size:10px;flex-wrap:wrap">
+    <span style="font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-2)">Confidence:</span>
+    <span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:#059669;display:inline-block"></span> From your data</span>
+    <span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:#d97706;display:inline-block"></span> Inferred / Claude's training</span>
+    <span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:#dc2626;display:inline-block"></span> Estimated — verify before using</span>
+  </div>`;
 }
 
 // ── Confidence line parser ─────────────────────────────────────────────────
