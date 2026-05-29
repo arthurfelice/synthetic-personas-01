@@ -178,8 +178,8 @@ textarea:focus,input:focus,select:focus{border-color:var(--accent);box-shadow:in
 .pw-btn{width:100%;margin-top:16px;padding:10px;background:var(--text-dark);color:var(--bg);border:1px solid var(--text-dark);font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;font-family:inherit;transition:background 0.12s;border-radius:0}
 .pw-btn:hover{background:#333330}
 /* Project home page */
-#pg-home{display:none;min-height:100vh;background:var(--bg)}
-#pg-home.on{display:block}
+#pg-home{display:none;background:var(--bg)}
+#pg-home.on{display:block;position:fixed;inset:0;overflow-y:auto;z-index:100}
 .home-bar{background:var(--bg);border-bottom:1px solid var(--border);padding:0 32px;height:54px;display:flex;align-items:center;gap:16px}
 .home-bar-title{font-size:13px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:var(--text-dark)}
 .home-bar-logo{margin-right:auto}
