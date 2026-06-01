@@ -320,9 +320,10 @@ Examples:
       <div class="f1 fg">
         <label>How many personas?</label>
         <select id="in-count">
+          <option value="" disabled selected>Select an option</option>
           <option value="1">1 persona</option>
           <option value="2">2 personas</option>
-          <option value="3" selected>3 personas</option>
+          <option value="3">3 personas</option>
           <option value="4">4 personas</option>
         </select>
       </div>
@@ -592,6 +593,7 @@ async function generatePersonas(append=false){
   const goal=document.getElementById('in-goal').value;
   const diversity=document.getElementById('in-diversity').checked;
   if(!product&&!data){alert('Please fill in at least the "Product / Service" field or the user data.');return}
+  if(!count||isNaN(count)){alert('Please select how many personas to generate.');return}
   if(!goal){alert('Please select a Research Goal before generating personas.');return}
   if(!append){S.product=product;S.data=data;S.count=count;S.goal=goal;}
   const existingPersonas=append?S.personas:[];
