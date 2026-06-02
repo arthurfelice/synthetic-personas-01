@@ -624,7 +624,7 @@ Persona number: ${totalIdx+1}${imgNote}${diversityNote}
 DATA PRIORITY — this overrides everything else:
 If the user data mentions nationality, country, region, language, ethnicity, or cultural background, ALL demographic fields (name, location, income, age) MUST be consistent with that. An Italian persona gets an Italian name and an Italian city. A Brazilian persona gets a Brazilian name and a Brazilian city. Never assign a location or name that contradicts the cultural context in the data.
 
-NAME RULES: Use a name that matches the cultural/national background implied by the user data. If no nationality is specified, default to American-sounding names. Every persona MUST have a completely unique first AND last name — no shared surnames or first names across personas. Avoid generic names (no "John Smith", "Jane Doe", etc.).${usedNames?`\nNAMES ALREADY USED (do NOT reuse any part of these, not even the first name): ${usedNames}`:''}
+NAME RULES: If the user data explicitly lists specific person names (e.g. "Persona 1: Maria Silva", "User: John Doe", or similar), you MUST use those exact names in order. Otherwise, use a name that matches the cultural/national background implied by the data. If no nationality is specified, default to American-sounding names. Every persona MUST have a completely unique first AND last name — no shared surnames or first names across personas. Avoid generic names (no "John Smith", "Jane Doe", etc.).${usedNames?`\nNAMES ALREADY USED (do NOT reuse any part of these, not even the first name): ${usedNames}`:''}
 
 DEMOGRAPHIC DIVERSITY: For any field NOT explicitly stated in the user data (age, location, income, techLevel), vary it significantly from other personas. Do not cluster personas around the same city, age bracket, or salary range unless the data requires it. Spread across different life stages, geographies, and income levels.
 
@@ -686,8 +686,9 @@ function avatarOrPhoto(p,size='md'){
 
 // ── STEP 2: Personas ───────────────────────────────────────────────────────
 function renderPersonasGrid(){
-  document.getElementById('personas-grid').innerHTML=`<div class="pg">${S.personas.map(p=>`
-    <div class="pc ${S.selId===p.id?'sel':''}" onclick="selPersona('${p.id}')">
+  const el=document.getElementById('personas-grid');
+  el.innerHTML=`<div class="pg">${S.personas.map(p=>`
+    <div class="pc ${S.selId===p.id?'sel':''}" data-pid="${p.id}">
       <div class="p-ava">${avatarOrPhoto(p)}</div>
       <div class="p-name">${p.name}</div>
       <div class="p-role">${p.occupation} · ${p.age} yrs · ${p.location}</div>
@@ -699,6 +700,10 @@ function renderPersonasGrid(){
       ${(S.interviews[p.id]||[]).filter(m=>m.role==='user').length>0
         ?`<div class="ib">✓ ${S.interviews[p.id].filter(m=>m.role==='user').length} questions asked</div>`:''}
     </div>`).join('')}</div>`;
+  el.onclick=function(e){
+    const card=e.target.closest('[data-pid]');
+    if(card)selPersona(card.dataset.pid);
+  };
 }
 
 function selPersona(id){
