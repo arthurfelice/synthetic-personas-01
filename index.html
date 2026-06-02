@@ -207,6 +207,12 @@ textarea:focus,input:focus,select:focus{border-color:var(--accent);box-shadow:in
 .new-card-inner{text-align:center;padding:24px}
 .new-card-plus{width:44px;height:44px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 12px;color:var(--text-2)}
 .new-card-label{font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-2)}
+/* Delete persona button */
+.pc-del-persona{position:absolute;top:8px;right:8px;width:20px;height:20px;border:none;background:rgba(0,0,0,.15);color:var(--text-dark);font-size:13px;cursor:pointer;display:none;align-items:center;justify-content:center;line-height:1;border-radius:2px;font-family:inherit;z-index:2}
+.pc:hover .pc-del-persona{display:flex}
+.pc-del-persona:hover{background:rgba(180,40,40,.8);color:#fff}
+.pc{position:relative}
+
 /* Confidence chip */
 .conf-chip{display:inline-flex;align-items:center;gap:5px;margin-top:7px;padding:3px 9px;font-size:10px;font-weight:600;border:1px solid;letter-spacing:0.03em}
 .conf-chip.high{background:transparent;color:var(--success);border-color:var(--success)}
@@ -621,21 +627,26 @@ ${existingSegs?`\nSegments already created — make this persona meaningfully di
 ${allExistingPersonas?`\nAll existing personas (DO NOT repeat any demographic combination): ${allExistingPersonas}`:''}
 Persona number: ${totalIdx+1}${imgNote}${diversityNote}
 
-STEP 1 — CHECK IF PERSONA ${totalIdx+1} IS EXPLICITLY DESCRIBED IN THE DATA:
-Scan the user data for a named, described individual that corresponds to persona number ${totalIdx+1} (counting from 1). Look for patterns like:
+STEP 1 — FIND THE NEXT UNUSED PERSONA DESCRIPTION IN THE DATA:
+
+Personas already created (do NOT reuse these): ${personas.length>0?personas.map(p=>p.name).join(', '):'none'}
+
+Scan the user data for explicitly described individuals. Look for patterns like:
 - "Name — Role (Title) Age X, City..."
-- "1. Name — Description..."
-- "Persona X: Name, Age, ..."
-- Any individual with a name + job title + demographic details listed together
+- "1. Name — Description..." / "2. Name..." / "3. Name..."
+- "Persona X: Name, ..."
+- Any block describing a person with name + job + demographics together
 
-IF a specific profile for persona ${totalIdx+1} IS found in the data:
-→ You MUST extract and use ALL provided details EXACTLY as stated: name, age, city, salary, occupation, personality traits, pain points, behaviors. Do NOT invent or replace any field that was explicitly provided.
-→ Only fill in fields that are genuinely missing from the description.
-→ All confidence scores for provided fields = "high".
+Find the FIRST described individual in the data whose name does NOT appear in the "already created" list above. That is the profile you must use for this persona.
 
-IF no specific profile is found for this persona number:
-→ Generate a plausible persona based on the overall context and segments described.
-→ Follow the name and diversity rules below.
+IF such a profile is found:
+→ Extract and use ALL provided details EXACTLY: name, age, city, salary/income, occupation, personality, pain points, behaviors. Do NOT invent or replace anything that was explicitly stated.
+→ Only infer/fill in fields genuinely missing from the description.
+→ Confidence = "high" for every field taken directly from the data.
+
+IF no unused described profile is found (all have been used, or data contains no specific profiles):
+→ Generate a new plausible persona based on the overall context.
+→ Follow name and diversity rules below.
 
 NAME RULES (only if name not provided): Use a name matching the cultural/national background implied by the data. Every persona MUST have a completely unique first AND last name. Avoid generic names.${usedNames?`\nNAMES ALREADY USED (do NOT reuse): ${usedNames}`:''}
 
@@ -698,10 +709,28 @@ function avatarOrPhoto(p,size='md'){
 }
 
 // ── STEP 2: Personas ───────────────────────────────────────────────────────
+function deletePersona(id){
+  if(!confirm('Delete this persona and their interview data?'))return;
+  S.personas=S.personas.filter(p=>p.id!==id);
+  delete S.interviews[id];
+  if(S.selId===id){
+    S.selId=null;
+    document.getElementById('persona-detail').innerHTML='';
+  }
+  renderPersonasGrid();
+  autoSave();
+  if(S.personas.length===0){
+    document.querySelectorAll('.step').forEach(s=>{
+      if(parseInt(s.dataset.s)>1)s.classList.add('locked');
+    });
+  }
+}
+
 function renderPersonasGrid(){
   const el=document.getElementById('personas-grid');
   el.innerHTML=`<div class="pg">${S.personas.map(p=>`
     <div class="pc ${S.selId===p.id?'sel':''}" data-pid="${p.id}" style="cursor:pointer">
+      <button class="pc-del-persona" data-del-pid="${p.id}" title="Delete persona">×</button>
       <div class="p-ava">${avatarOrPhoto(p)}</div>
       <div class="p-name">${p.name}</div>
       <div class="p-role">${p.occupation} · ${p.age} yrs · ${p.location}</div>
@@ -720,6 +749,16 @@ function renderPersonasGrid(){
       card.addEventListener('click',function(e){
         e.stopPropagation();
         selPersona(p.id);
+      });
+    }
+  });
+  // Attach delete listeners
+  S.personas.forEach(function(p){
+    var del=document.querySelector('[data-del-pid="'+p.id+'"]');
+    if(del){
+      del.addEventListener('click',function(e){
+        e.stopPropagation();
+        deletePersona(p.id);
       });
     }
   });
