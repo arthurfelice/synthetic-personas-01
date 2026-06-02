@@ -87,8 +87,8 @@ textarea:focus,input:focus,select:focus{border-color:var(--accent);box-shadow:in
 .ds{margin-bottom:14px}
 .ds label{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-2);display:block;margin-bottom:5px}
 .dl{list-style:none;display:flex;flex-direction:column;gap:4px}
-.dl li{font-size:12px;display:flex;gap:8px;align-items:flex-start;line-height:1.6}
-.dl li::before{content:'—';color:var(--text-2);flex-shrink:0;font-weight:400;margin-top:1px}
+.dl li{font-size:12px;display:flex;gap:6px;align-items:baseline;line-height:1.6}
+.dl li::before{content:none}
 .dl li .conf-dot-wrap{display:inline-flex;align-items:center;margin-left:3px;vertical-align:middle;position:relative;top:-1px}
 .p-selector{display:flex;gap:0;flex-wrap:wrap;margin-bottom:16px;border:1px solid var(--border)}
 .ps-chip{display:flex;align-items:center;gap:8px;padding:9px 14px;cursor:pointer;transition:background 0.12s;background:var(--surface);border-right:1px solid var(--border);min-width:140px}
@@ -641,7 +641,7 @@ IMPORTANT: Return ONLY the JSON object, nothing else. No explanation, no markdow
       const text=await callClaude(prompt, S_imgs);
       const raw=extractJSON(text);
       if(!raw||typeof raw!=='object'||Array.isArray(raw))throw new Error('Response is not a valid JSON object');
-      const p=normalizePersona(raw,i);
+      const p=normalizePersona(raw,totalIdx);
       S.interviews[p.id]=[];
       personas.push(p);
     }catch(e){
@@ -742,10 +742,10 @@ function selPersona(id){
         <div class="ds"><label>Background</label><p style="font-size:13px;line-height:1.65;color:var(--text-2)">${p.background}${confDot((p.confidence||{}).background)}</p></div>
         <div class="ds"><label>Job-to-be-done</label><p style="font-size:13px;line-height:1.65">${p.jtbd}${confDot((p.confidence||{}).jtbd)}</p></div>
         <div class="dg">
-          <div class="ds"><label>Goals</label><ul class="dl">${(p.goals||[]).map((g,i)=>`<li>${g}${itemDot((p.confidence||{}).goals,i)}</li>`).join('')}</ul></div>
-          <div class="ds"><label>Pain Points</label><ul class="dl">${(p.pains||[]).map((g,i)=>`<li>${g}${itemDot((p.confidence||{}).pains,i)}</li>`).join('')}</ul></div>
+          <div class="ds"><label>Goals</label><ul class="dl">${(p.goals||[]).map((g,i)=>`<li>${itemDot((p.confidence||{}).goals,i)}${g}</li>`).join('')}</ul></div>
+          <div class="ds"><label>Pain Points</label><ul class="dl">${(p.pains||[]).map((g,i)=>`<li>${itemDot((p.confidence||{}).pains,i)}${g}</li>`).join('')}</ul></div>
         </div>
-        <div class="ds"><label>Behaviors</label><ul class="dl">${(p.behaviors||[]).map((g,i)=>`<li>${g}${itemDot((p.confidence||{}).behaviors,i)}</li>`).join('')}</ul></div>
+        <div class="ds"><label>Behaviors</label><ul class="dl">${(p.behaviors||[]).map((g,i)=>`<li>${itemDot((p.confidence||{}).behaviors,i)}${g}</li>`).join('')}</ul></div>
       </div>
     </div>`;
   }catch(e){console.error("selPersona error:",e,id);}
@@ -1065,13 +1065,13 @@ function confDot(level,inline=false){
   return`<span title="${l}" style="display:inline-block;width:${size};height:${size};border-radius:50%;background:${c};margin:${margin};vertical-align:middle;cursor:help;flex-shrink:0"></span>`;
 }
 function itemDot(conf,index){
-  if(!conf)return'';
+  if(!conf)return'<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--border);flex-shrink:0;margin-top:5px"></span>';
   const level=Array.isArray(conf)?conf[index]:conf;
-  if(!level)return'';
+  if(!level)return'<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--border);flex-shrink:0;margin-top:5px"></span>';
   const map={high:'#059669',medium:'#d97706',low:'#dc2626'};
   const label={high:'From your data',medium:'Inferred / Claude training',low:'Estimated — verify'};
   const c=map[level]||'#9ca3af';
-  return`<span class="conf-dot-wrap" title="${label[level]||level}"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${c}"></span></span>`;
+  return`<span title="${label[level]||level}" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${c};flex-shrink:0;margin-top:5px;cursor:help"></span>`;
 }
 function confLegendHtml(){
   return`<div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;padding:8px 12px;background:var(--surface-2);border:1px solid var(--border);font-size:10px;flex-wrap:wrap">
