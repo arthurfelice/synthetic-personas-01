@@ -707,7 +707,9 @@ function renderPersonasGrid(){
 }
 
 function selPersona(id){
-  S.selId=id;renderPersonasGrid();
+  S.selId=id;
+  // Update card highlight without re-rendering
+  document.querySelectorAll('.pc').forEach(c=>c.classList.toggle('sel',c.dataset.pid===id));
   const p=S.personas.find(x=>x.id===id);if(!p)return;
   document.getElementById('persona-detail').innerHTML=`
     <div class="pd">
