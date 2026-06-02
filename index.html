@@ -688,7 +688,7 @@ function avatarOrPhoto(p,size='md'){
 function renderPersonasGrid(){
   const el=document.getElementById('personas-grid');
   el.innerHTML=`<div class="pg">${S.personas.map(p=>`
-    <div class="pc ${S.selId===p.id?'sel':''}" data-pid="${p.id}">
+    <div class="pc ${S.selId===p.id?'sel':''}" data-pid="${p.id}" style="cursor:pointer">
       <div class="p-ava">${avatarOrPhoto(p)}</div>
       <div class="p-name">${p.name}</div>
       <div class="p-role">${p.occupation} · ${p.age} yrs · ${p.location}</div>
@@ -700,17 +700,27 @@ function renderPersonasGrid(){
       ${(S.interviews[p.id]||[]).filter(m=>m.role==='user').length>0
         ?`<div class="ib">✓ ${S.interviews[p.id].filter(m=>m.role==='user').length} questions asked</div>`:''}
     </div>`).join('')}</div>`;
-  el.onclick=function(e){
-    const card=e.target.closest('[data-pid]');
-    if(card)selPersona(card.dataset.pid);
-  };
+  // Attach click listeners individually after DOM is built
+  S.personas.forEach(function(p){
+    var card=document.querySelector('[data-pid="'+p.id+'"]');
+    if(card){
+      card.addEventListener('click',function(e){
+        e.stopPropagation();
+        selPersona(p.id);
+      });
+    }
+  });
 }
 
 function selPersona(id){
+  try{
   S.selId=id;
-  // Update card highlight without re-rendering
-  document.querySelectorAll('.pc').forEach(c=>c.classList.toggle('sel',c.dataset.pid===id));
-  const p=S.personas.find(x=>x.id===id);if(!p)return;
+  // Update card highlight
+  document.querySelectorAll('[data-pid]').forEach(function(c){
+    c.classList.toggle('sel', c.dataset.pid===id);
+  });
+  var p=S.personas.find(function(x){return x.id===id;});
+  if(!p){console.error('selPersona: persona not found',id);return;}
   document.getElementById('persona-detail').innerHTML=`
     <div class="pd">
       <div class="pd-head" style="background:linear-gradient(135deg,${p.color} 0%,${p.color}99 100%)">
@@ -738,8 +748,8 @@ function selPersona(id){
         <div class="ds"><label>Behaviors</label><ul class="dl">${(p.behaviors||[]).map((g,i)=>`<li>${g}${itemDot((p.confidence||{}).behaviors,i)}</li>`).join('')}</ul></div>
       </div>
     </div>`;
+  }catch(e){console.error("selPersona error:",e,id);}
 }
-
 function startInterview(id){S.activeId=id;nav(3)}
 
 // ── STEP 3: Interview ──────────────────────────────────────────────────────
