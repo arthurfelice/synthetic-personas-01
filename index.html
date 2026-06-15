@@ -319,7 +319,9 @@ Examples:
 • Recurring feedback: 'hard to trust AI suggestions', 'want to understand what it changed'
 • NPS: promoters mention 'saves hours of boilerplate', detractors cite 'unpredictable behavior'
 • 60% of churn happens in the first 30 days
-• CRM data: avg deal $280/mo, sales cycle 14 days, CAC $320"></textarea>
+• CRM data: avg deal $280/mo, sales cycle 14 days, CAC $320
+
+💡 Tip: to constrain all personas, state it explicitly — e.g. 'All users are female, aged 25-30' or 'B2B only, enterprise segment'."></textarea>
       <div class="hint">Free text, tables, bullets — no need to structure it.</div>
     </div>
     <div class="row">
@@ -616,6 +618,9 @@ ${existingSegs?`\nSegments already created — make this persona meaningfully di
 ${allExistingPersonas?`\nAll existing personas (DO NOT repeat any demographic combination): ${allExistingPersonas}`:''}
 Persona number: ${totalIdx+1}${imgNote}${diversityNote}
 
+HARD CONSTRAINTS — APPLY TO ALL PERSONAS:
+Before anything else, scan the user data for explicit constraints that apply to ALL users (e.g. "all users are female", "age range 25-30", "B2B only", "Brazilian market"). These OVERRIDE the diversity instructions below. Every persona you generate MUST satisfy these constraints, even if it means repeating an attribute across personas.
+
 STEP 1 — FIND THE NEXT UNUSED PERSONA DESCRIPTION IN THE DATA:
 
 Personas already created (do NOT reuse these): ${personas.length>0?personas.map(p=>p.name).join(', '):'none'}
@@ -639,7 +644,7 @@ IF no unused described profile is found (all have been used, or data contains no
 
 NAME RULES (only if name not provided): Use a name matching the cultural/national background implied by the data. Every persona MUST have a completely unique first AND last name. Avoid generic names.${usedNames?`\nNAMES ALREADY USED (do NOT reuse): ${usedNames}`:''}
 
-DIVERSITY (only for fields NOT provided in the data): Vary age, location, income, and techLevel significantly from existing personas.
+DIVERSITY (only for fields NOT constrained by the user data): Vary age, location, income, and techLevel significantly from existing personas. Never override an explicit constraint (e.g. if data says 'all users are female', keep all personas female).
 
 CONFIDENCE SCORING — be strict:
 - "high": explicitly stated in the user data
