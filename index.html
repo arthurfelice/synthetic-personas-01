@@ -53,10 +53,10 @@ textarea:focus,input:focus,select:focus{border-color:var(--accent);box-shadow:in
 .row{display:flex;gap:12px;align-items:flex-start}
 .f1{flex:1}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;font-size:12px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;cursor:pointer;transition:all 0.12s;font-family:inherit;border-radius:0}
-.btn-p{background:var(--text-dark);color:var(--bg);border:1px solid var(--text-dark)}
-.btn-p:hover{background:#333330;border-color:#333330;border-left:3px solid var(--accent)}
+.btn-p{background:var(--text-dark);color:var(--bg);border:1px solid var(--text-dark);border-left:3px solid var(--accent)}
+.btn-p:hover{background:#333330;border-color:#333330}
 .btn-p:disabled{background:var(--border);color:var(--text-2);border-color:var(--border);cursor:not-allowed}
-.btn-s{background:transparent;color:var(--text-dark);border:1px solid var(--border)}
+.btn-s{background:transparent;color:var(--text-dark);border:1px solid var(--border);border-left:3px solid var(--accent)}
 .btn-s:hover{border-color:var(--text-dark);background:var(--surface-2)}
 .btn-g{background:transparent;color:var(--text-2);padding:5px 10px;font-size:11px;border:none;letter-spacing:0.04em;text-transform:uppercase}
 .btn-g:hover{color:var(--text-dark)}
@@ -386,7 +386,7 @@ Examples:
     <div id="persona-detail"></div>
     <div class="actions">
       <button class="btn btn-s" onclick="nav(1)">← Refine Data</button>
-      <button class="btn btn-s" onclick="nav(1)" style="border-left:3px solid var(--accent)" title="Add a new group of personas with different characteristics">+ Add Different Personas</button>
+      <button class="btn btn-s" onclick="nav(1)" title="Add a new group of personas with different characteristics">+ Add Different Personas</button>
       <button class="btn btn-p" onclick="nav(3)">Start Interviews →</button>
     </div>
   </div>
