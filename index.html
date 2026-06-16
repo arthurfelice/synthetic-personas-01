@@ -949,7 +949,11 @@ function renderSynthesisStep(){
   }
   // Show/hide re-run button based on whether synthesis exists
   const btnSynStep=document.getElementById('btn-syn');
-  if(btnSynStep)btnSynStep.style.display=S.synthesis?'none':'';
+  if(btnSynStep){
+    btnSynStep.style.display=interviewed.length>0?'':'none';
+    btnSynStep.textContent=S.synthesis?'🔄 Update Synthesis':'🔬 Analyze & Synthesize';
+    btnSynStep.disabled=interviewed.length===0;
+  }
   updateSynBar();
 }
 
@@ -1083,9 +1087,7 @@ function renderSynthesisHtml(md){
   }
   if(inUl)html+='</ul>';if(inOl)html+='</ol>';
   document.getElementById('synthesis-out').innerHTML=`<div class="syn-content">${html}</div>${chip?`<div style="margin-top:14px">${chip}</div>`:''}`;
-  // Hide re-run button once synthesis is done
-  const btnSyn=document.getElementById('btn-syn');
-  if(btnSyn)btnSyn.style.display='none';
+  // Button label is managed by renderSynthesisStep
 }
 
 function pi(t){
