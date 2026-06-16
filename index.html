@@ -953,6 +953,7 @@ function renderSynthesisStep(){
     btnSynStep.style.display=interviewed.length>0?'':'none';
     btnSynStep.textContent=S.synthesis?'🔄 Update Synthesis':'🔬 Analyze & Synthesize';
     btnSynStep.disabled=interviewed.length===0;
+    btnSynStep.className=S.synthesis?'btn btn-s':'btn btn-p';
   }
   updateSynBar();
 }
