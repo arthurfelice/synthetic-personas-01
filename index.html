@@ -552,7 +552,44 @@ function normalizePersona(p,i){
   };
 }
 
-// ── Step 1 button state ────────────────────────────────────────────────────
+// ── Data template ──────────────────────────────────────────────────────────
+function getDataTemplate(){
+  if(L==='PT'){
+    return `Nome:
+Idade:
+Cidade/Estado/País:
+Profissão/Cargo:
+Renda mensal:
+Estado civil:
+Escolaridade:
+Nível de tecnologia (iniciante / intermediário / avançado):
+
+Comportamentos e rotina relevantes:
+
+Objetivos e motivações:
+
+Dores e frustrações atuais:
+
+Como resolve esse problema hoje (sem o produto):`;
+  }
+  return `Name:
+Age:
+City/State/Country:
+Occupation/Role:
+Monthly income:
+Marital status:
+Education:
+Tech level (beginner / intermediate / advanced):
+
+Relevant behaviors and daily routine:
+
+Goals and motivations:
+
+Current pain points and frustrations:
+
+How they solve this problem today (without the product):`;
+}
+
 // ── Navigation helpers ─────────────────────────────────────────────────────
 function goRefineData(personaId){
   S.appendMode=false;
@@ -568,7 +605,7 @@ function goRefineData(personaId){
 function goAddDifferentPersonas(){
   S.appendMode=true;
   S.refinePersonaId=null;
-  const di=document.getElementById('in-data');if(di)di.value='';
+  const di=document.getElementById('in-data');if(di)di.value=getDataTemplate();
   nav(1,true);
   const btn=document.getElementById('btn-generate');
   if(btn){btn.setAttribute('data-i18n','btnGenerate');btn.textContent=t('btnGenerate');}
@@ -1303,7 +1340,7 @@ function startNewSession(){
   S.step=1;S.product='';S.data='';S.goal='';S.count=3;
   S.personas=[];S.selId=null;S.activeId=null;S.interviews={};S.synthesis=null;
   const pi=document.getElementById('in-product');if(pi)pi.value='';
-  const di=document.getElementById('in-data');if(di)di.value='';
+  const di=document.getElementById('in-data');if(di)di.value=getDataTemplate();
   const gi=document.getElementById('in-goal');if(gi)gi.value='';
   hideHomePage();
   nav(1);
