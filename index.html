@@ -560,7 +560,7 @@ function goRefineData(personaId){
   const di=document.getElementById('in-data');if(di)di.value=S.data;
   const pi=document.getElementById('in-product');if(pi)pi.value=S.product;
   const gi=document.getElementById('in-goal');if(gi)gi.value=S.goal;
-  nav(1);
+  nav(1,true);
   const btn=document.getElementById('btn-generate');
   if(btn){btn.setAttribute('data-i18n','btnUpdateData');btn.textContent=t('btnUpdateData');}
 }
@@ -569,14 +569,15 @@ function goAddDifferentPersonas(){
   S.appendMode=true;
   S.refinePersonaId=null;
   const di=document.getElementById('in-data');if(di)di.value='';
-  nav(1);
+  nav(1,true);
   const btn=document.getElementById('btn-generate');
   if(btn){btn.setAttribute('data-i18n','btnGenerate');btn.textContent=t('btnGenerate');}
 }
 
 // ── Navigation ─────────────────────────────────────────────────────────────
-function nav(n){
+function nav(n,force=false){
   if(n>1&&S.personas.length===0)return;
+  if(n===1&&S.personas.length>0&&!force)return;
   S.step=n;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   document.getElementById(`pg${n}`).classList.add('on');
@@ -584,7 +585,10 @@ function nav(n){
     const sn=parseInt(s.dataset.s);
     s.classList.remove('active','done','locked');
     if(sn===n)s.classList.add('active');
-    else if(sn<n)s.classList.add('done');
+    else if(sn<n){
+      s.classList.add('done');
+      if(sn===1&&S.personas.length>0)s.classList.add('locked');
+    }
     else if(S.personas.length===0)s.classList.add('locked');
   });
   if(n===3)renderInterviewStep();
