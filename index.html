@@ -387,8 +387,8 @@ Examples:
     <div class="card-sub" data-i18n="personasSub">Click a persona to see full details. Use the button to start interviews.</div>
     <div id="personas-grid"><div class="empty"><div class="ei">🎭</div><div class="et">No personas generated yet</div><div class="es">Go back to Step 1 and add your data</div></div></div>
     <div id="persona-detail"></div>
-    <div class="actions">
-      <button class="btn btn-s" onclick="goAddDifferentPersonas()" title="Add a new group of personas with different characteristics" data-i18n="btnAddDifferent">+ Add Different Personas</button>
+    <div class="actions" id="personas-actions">
+      <button class="btn btn-s" onclick="goAddDifferentPersonas()" data-i18n="btnAddDifferent">+ Add Different Personas</button>
       <button class="btn btn-p" onclick="nav(3)" data-i18n="btnStartInterviews">Start Interviews →</button>
     </div>
   </div>
@@ -778,6 +778,19 @@ function renderPersonasGrid(){
       });
     }
   });
+  renderPersonasActions();
+}
+
+function renderPersonasActions(){
+  const el=document.getElementById('personas-actions');
+  if(!el)return;
+  if(S.personas.length===0){
+    el.innerHTML=`<button class="btn btn-s" onclick="goAddDifferentPersonas()" data-i18n="btnAddPersona">+ Add Persona</button>`;
+  }else{
+    el.innerHTML=`<button class="btn btn-s" onclick="goAddDifferentPersonas()" data-i18n="btnAddDifferent">+ Add Different Personas</button>
+      <button class="btn btn-p" onclick="nav(3)" data-i18n="btnStartInterviews">Start Interviews →</button>`;
+  }
+  applyLang();
 }
 
 function selPersona(id){
@@ -1391,7 +1404,7 @@ const STR = {
     btnGenerate:'✨ Generate Persona', btnAddMore:'+ Add More Personas', btnUpdateData:'↺ Update Data',
     personasTitle:'👥 Generated Personas',
     personasSub:'Click a persona to see full details. Use the button to start interviews.',
-    btnRefineData:'← Refine Data', btnAddDifferent:'+ Add Different Personas', btnStartInterviews:'Start Interviews →',
+    btnRefineData:'← Refine Data', btnAddPersona:'+ Add Persona', btnAddDifferent:'+ Add Different Personas', btnStartInterviews:'Start Interviews →',
     interviewTitle:'🎙️ Persona Interview',
     interviewSub:'Select a persona and ask open-ended questions. They will respond in character.',
     btnViewPersonas:'← View Personas', btnViewSynthesis:'View Synthesis →',
@@ -1423,7 +1436,7 @@ const STR = {
     btnGenerate:'✨ Gerar Persona', btnAddMore:'+ Adicionar Mais Personas', btnUpdateData:'↺ Atualizar Dados',
     personasTitle:'👥 Personas Geradas',
     personasSub:'Clique em uma persona para ver detalhes. Use o botão para iniciar as entrevistas.',
-    btnRefineData:'← Refinar Dados', btnAddDifferent:'+ Adicionar Personas Diferentes', btnStartInterviews:'Iniciar Entrevistas →',
+    btnRefineData:'← Refinar Dados', btnAddPersona:'+ Adicionar Persona', btnAddDifferent:'+ Adicionar Personas Diferentes', btnStartInterviews:'Iniciar Entrevistas →',
     interviewTitle:'🎙️ Entrevista com Persona',
     interviewSub:'Selecione uma persona e faça perguntas abertas. Ela responderá em personagem.',
     btnViewPersonas:'← Ver Personas', btnViewSynthesis:'Ver Síntese →',
