@@ -374,13 +374,6 @@ Examples:
       <div class="hint">Personas will analyze the images as if seeing the actual product, and respond based on what they observe.</div>
     </div>
 
-    <div class="fg" style="margin-top:4px">
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;font-size:12px;font-weight:500;letter-spacing:0">
-        <input type="checkbox" id="in-diversity" style="width:auto;accent-color:var(--accent)">
-        <span data-i18n-html="labelDiversity"><strong>Maximize diversity</strong> — force contrasting profiles in age, income, behavior and context</span>
-      </label>
-    </div>
-
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
       <button id="btn-generate" class="btn btn-p" onclick="generatePersonas(S.appendMode)" data-i18n="btnGenerate">✨ Generate Persona</button>
     </div>
@@ -395,7 +388,6 @@ Examples:
     <div id="personas-grid"><div class="empty"><div class="ei">🎭</div><div class="et">No personas generated yet</div><div class="es">Go back to Step 1 and add your data</div></div></div>
     <div id="persona-detail"></div>
     <div class="actions">
-      <button class="btn btn-s" onclick="goRefineData()" data-i18n="btnRefineData">← Refine Data</button>
       <button class="btn btn-s" onclick="goAddDifferentPersonas()" title="Add a new group of personas with different characteristics" data-i18n="btnAddDifferent">+ Add Different Personas</button>
       <button class="btn btn-p" onclick="nav(3)" data-i18n="btnStartInterviews">Start Interviews →</button>
     </div>
@@ -447,7 +439,7 @@ Examples:
 
 <script>
 // ── State ──────────────────────────────────────────────────────────────────
-const S={step:1,product:'',data:'',goal:'product',count:3,personas:[],selId:null,activeId:null,interviews:{},synthesis:null,appendMode:false};
+const S={step:1,product:'',data:'',goal:'product',count:3,personas:[],selId:null,activeId:null,interviews:{},synthesis:null,appendMode:false,refinePersonaId:null};
 const COLORS=['#4f46e5','#7c3aed','#0891b2','#059669','#d97706','#dc2626'];
 const AVATARS=['👩‍💼','👨‍💻','👩‍🔬','👨‍🎨','👩‍🏫','👨‍🏢','👩‍💻','👨‍🍳'];
 
@@ -562,8 +554,9 @@ function normalizePersona(p,i){
 
 // ── Step 1 button state ────────────────────────────────────────────────────
 // ── Navigation helpers ─────────────────────────────────────────────────────
-function goRefineData(){
+function goRefineData(personaId){
   S.appendMode=false;
+  S.refinePersonaId=personaId||null;
   const di=document.getElementById('in-data');if(di)di.value=S.data;
   const pi=document.getElementById('in-product');if(pi)pi.value=S.product;
   const gi=document.getElementById('in-goal');if(gi)gi.value=S.goal;
@@ -574,6 +567,7 @@ function goRefineData(){
 
 function goAddDifferentPersonas(){
   S.appendMode=true;
+  S.refinePersonaId=null;
   const di=document.getElementById('in-data');if(di)di.value='';
   nav(1);
   const btn=document.getElementById('btn-generate');
@@ -603,12 +597,12 @@ async function generatePersonas(append=false){
   const data=document.getElementById('in-data').value.trim();
   const count=1;
   const goal=document.getElementById('in-goal').value;
-  const diversity=document.getElementById('in-diversity').checked;
   if(!product&&!data){alert('Please fill in at least the "Product / Service" field or the user data.');return}
   if(!goal){alert('Please select a Research Goal before generating personas.');return}
   S.data=data;
   if(!append){S.product=product;S.goal=goal;}
-  const existingPersonas=append?S.personas:[];
+  // In refine mode, keep all other personas as context (exclude the one being replaced)
+  const existingPersonas=append?S.personas:(S.refinePersonaId?S.personas.filter(p=>p.id!==S.refinePersonaId):[]);
   const startIndex=existingPersonas.length;
   const personas=[...existingPersonas];
   for(let i=0;i<count;i++){
@@ -619,9 +613,6 @@ async function generatePersonas(append=false){
     const imgNote=S_imgs.length>0
       ?`\nPRODUCT IMAGES: ${S_imgs.length} image(s) of the product have been provided. When crafting this persona's background, JTBD, and quote, assume they have seen or interacted with this product visually.`
       :'';
-    const diversityNote=diversity
-      ?`\nDIVERSITY MANDATE: This persona MUST be maximally contrasting with all existing personas. Deliberately vary: age bracket (different generation), income tier, tech comfort, geography, and primary motivation. Cover the widest possible spectrum of user types.`
-      :'';
     const allExistingPersonas=personas.map(p=>`${p.name} (${p.age} yrs, ${p.location}, ${p.segment})`).join('; ');
     const prompt=`You are a UX researcher. Your job is to extract or create ONE synthetic user persona as a JSON object.
 
@@ -631,7 +622,7 @@ User context:
 ${data}
 ${existingSegs?`\nSegments already created — make this persona meaningfully different: ${existingSegs}`:''}
 ${allExistingPersonas?`\nAll existing personas (DO NOT repeat any demographic combination): ${allExistingPersonas}`:''}
-Persona number: ${totalIdx+1}${imgNote}${diversityNote}
+Persona number: ${totalIdx+1}${imgNote}
 
 HARD CONSTRAINTS — APPLY TO ALL PERSONAS:
 Before anything else, scan the user data for explicit constraints that apply to ALL users (e.g. "all users are female", "age range 25-30", "B2B only", "Brazilian market"). These OVERRIDE the diversity instructions below. Every persona you generate MUST satisfy these constraints, even if it means repeating an attribute across personas.
@@ -685,7 +676,15 @@ IMPORTANT: Return ONLY the JSON object, nothing else. No explanation, no markdow
       return;
     }
   }
-  S.personas=personas;S.appendMode=false;
+  if(S.refinePersonaId){
+    const ridx=S.personas.findIndex(p=>p.id===S.refinePersonaId);
+    if(ridx>=0){S.personas.splice(ridx,1,personas[personas.length-1]);}
+    else{S.personas=S.personas.concat([personas[personas.length-1]]);}
+    S.refinePersonaId=null;
+  }else{
+    S.personas=personas;
+  }
+  S.appendMode=false;
   const btnG=document.getElementById('btn-generate');
   if(btnG){btnG.setAttribute('data-i18n','btnGenerate');btnG.textContent=t('btnGenerate');}
   unlockAll();renderPersonasGrid();
@@ -792,7 +791,10 @@ function selPersona(id){
           <div style="position:absolute;bottom:0;right:0;width:16px;height:16px;background:rgba(0,0,0,.5);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px">📷</div>
         </div>
         <div><div class="pd-name">${p.name}</div><div class="pd-role">${p.occupation} · ${p.segment} · ${p.techLevel}</div></div>
-        <button class="btn btn-g" style="margin-left:auto;color:#fff;opacity:.8" onclick="startInterview('${p.id}')">🎙️ Interview</button>
+        <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+          <button class="btn btn-s" style="font-size:10px;padding:5px 12px;background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);color:#fff" onclick="goRefineData('${p.id}')">${t('btnRefineData')}</button>
+          <button class="btn btn-g" style="color:#fff;opacity:.8" onclick="startInterview('${p.id}')">🎙️ Interview</button>
+        </div>
       </div>
       <div class="pd-body">
         ${confLegendHtml()}
