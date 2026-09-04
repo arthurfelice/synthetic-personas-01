@@ -685,9 +685,11 @@ IMPORTANT: Return ONLY the JSON object, nothing else. No explanation, no markdow
     S.personas=personas;
   }
   S.appendMode=false;
+  S.selId=null;
   const btnG=document.getElementById('btn-generate');
   if(btnG){btnG.setAttribute('data-i18n','btnGenerate');btnG.textContent=t('btnGenerate');}
   unlockAll();renderPersonasGrid();
+  const pd=document.getElementById('persona-detail');if(pd)pd.innerHTML='';
   nav(2);hideLoad();autoSave();
 }
 
