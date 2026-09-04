@@ -394,9 +394,7 @@ Examples:
     </div>
 
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-      <button class="btn btn-p" onclick="generatePersonas(false)" data-i18n="btnGenerate">✨ Generate Personas</button>
-      <span id="append-hint" style="display:none;font-size:11px;color:var(--text-2)">or</span>
-      <button class="btn btn-s" id="btn-append" style="display:none" onclick="generatePersonas(true)" data-i18n="btnAddMore">+ Add More Personas</button>
+      <button class="btn btn-p" onclick="generatePersonas(S.appendMode)" data-i18n="btnGenerate">✨ Generate Personas</button>
     </div>
   </div>
 </div>
@@ -409,8 +407,8 @@ Examples:
     <div id="personas-grid"><div class="empty"><div class="ei">🎭</div><div class="et">No personas generated yet</div><div class="es">Go back to Step 1 and add your data</div></div></div>
     <div id="persona-detail"></div>
     <div class="actions">
-      <button class="btn btn-s" onclick="nav(1)" data-i18n="btnRefineData">← Refine Data</button>
-      <button class="btn btn-s" onclick="nav(1)" title="Add a new group of personas with different characteristics" data-i18n="btnAddDifferent">+ Add Different Personas</button>
+      <button class="btn btn-s" onclick="goRefineData()" data-i18n="btnRefineData">← Refine Data</button>
+      <button class="btn btn-s" onclick="goAddDifferentPersonas()" title="Add a new group of personas with different characteristics" data-i18n="btnAddDifferent">+ Add Different Personas</button>
       <button class="btn btn-p" onclick="nav(3)" data-i18n="btnStartInterviews">Start Interviews →</button>
     </div>
   </div>
@@ -461,7 +459,7 @@ Examples:
 
 <script>
 // ── State ──────────────────────────────────────────────────────────────────
-const S={step:1,product:'',data:'',goal:'product',count:3,personas:[],selId:null,activeId:null,interviews:{},synthesis:null};
+const S={step:1,product:'',data:'',goal:'product',count:3,personas:[],selId:null,activeId:null,interviews:{},synthesis:null,appendMode:false};
 const COLORS=['#4f46e5','#7c3aed','#0891b2','#059669','#d97706','#dc2626'];
 const AVATARS=['👩‍💼','👨‍💻','👩‍🔬','👨‍🎨','👩‍🏫','👨‍🏢','👩‍💻','👨‍🍳'];
 
@@ -575,22 +573,20 @@ function normalizePersona(p,i){
 }
 
 // ── Step 1 button state ────────────────────────────────────────────────────
-function updateStep1Buttons(){
-  const hasPersonas=S.personas.length>0;
-  const btnGen=document.querySelector('[onclick="generatePersonas(false)"]');
-  const btnAdd=document.getElementById('btn-append');
-  if(!btnGen||!btnAdd)return;
-  if(hasPersonas){
-    // "Add More" becomes primary, "Generate" becomes secondary
-    btnAdd.className='btn btn-p';
-    btnGen.className='btn btn-s';
-    btnGen.style.opacity='0.6';
-    btnAdd.textContent='+ Add More Personas';
-  }else{
-    btnGen.className='btn btn-p';
-    btnAdd.className='btn btn-s';
-    btnGen.style.opacity='';
-  }
+// ── Navigation helpers ─────────────────────────────────────────────────────
+function goRefineData(){
+  S.appendMode=false;
+  const di=document.getElementById('in-data');if(di)di.value=S.data;
+  const pi=document.getElementById('in-product');if(pi)pi.value=S.product;
+  const gi=document.getElementById('in-goal');if(gi)gi.value=S.goal;
+  const ci=document.getElementById('in-count');if(ci)ci.value=S.count;
+  nav(1);
+}
+
+function goAddDifferentPersonas(){
+  S.appendMode=true;
+  const di=document.getElementById('in-data');if(di)di.value='';
+  nav(1);
 }
 
 // ── Navigation ─────────────────────────────────────────────────────────────
@@ -606,7 +602,6 @@ function nav(n){
     else if(sn<n)s.classList.add('done');
     else if(S.personas.length===0)s.classList.add('locked');
   });
-  if(n===1)updateStep1Buttons();
   if(n===3)renderInterviewStep();
   if(n===4)renderSynthesisStep();
 }
@@ -621,7 +616,8 @@ async function generatePersonas(append=false){
   if(!product&&!data){alert('Please fill in at least the "Product / Service" field or the user data.');return}
   if(!count||isNaN(count)){alert('Please select how many personas to generate.');return}
   if(!goal){alert('Please select a Research Goal before generating personas.');return}
-  if(!append){S.product=product;S.data=data;S.count=count;S.goal=goal;}
+  S.data=data;
+  if(!append){S.product=product;S.count=count;S.goal=goal;}
   const existingPersonas=append?S.personas:[];
   const startIndex=existingPersonas.length;
   const personas=[...existingPersonas];
@@ -699,10 +695,7 @@ IMPORTANT: Return ONLY the JSON object, nothing else. No explanation, no markdow
       return;
     }
   }
-  S.personas=personas;unlockAll();renderPersonasGrid();
-  document.getElementById('btn-append').style.display='';
-  document.getElementById('append-hint').style.display='';
-  updateStep1Buttons();
+  S.personas=personas;S.appendMode=false;unlockAll();renderPersonasGrid();
   nav(2);hideLoad();autoSave();
 }
 
@@ -1465,8 +1458,6 @@ function applyLang(){
   // Update dynamic buttons
   const btnSyn=document.getElementById('btn-syn');
   if(btnSyn && btnSyn.dataset.state) btnSyn.textContent=t(btnSyn.dataset.state==='update'?'btnUpdateSynthesis':'btnAnalyze');
-  const btnApp=document.getElementById('btn-append');
-  if(btnApp) btnApp.textContent=t('btnAddMore');
   // Refresh new-card labels
   document.querySelectorAll('.new-card-label').forEach(el=>el.textContent=t('newProject'));
 }
