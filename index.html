@@ -348,28 +348,16 @@ Examples:
 💡 Tip: to constrain all personas, state it explicitly — e.g. 'All users are female, aged 25-30' or 'B2B only, enterprise segment'."></textarea>
       <div class="hint" data-i18n="hintData">Free text, tables, bullets — no need to structure it.</div>
     </div>
-    <div class="row">
-      <div class="f1 fg">
-        <label data-i18n="labelCount">How many personas?</label>
-        <select id="in-count">
-          <option value="" disabled selected data-i18n="optSelect">Select an option</option>
-          <option value="1" data-i18n="opt1p">1 persona</option>
-          <option value="2" data-i18n="opt2p">2 personas</option>
-          <option value="3" data-i18n="opt3p">3 personas</option>
-          <option value="4" data-i18n="opt4p">4 personas</option>
-        </select>
-      </div>
-      <div class="f1 fg">
-        <label data-i18n="labelGoal">Research goal</label>
-        <select id="in-goal" onchange="onGoalChange(this.value)">
-          <option value="" disabled selected data-i18n="optSelect">Select an option</option>
-          <option value="product" data-i18n="goalProduct">Product / feature validation</option>
-          <option value="ux" data-i18n="goalUX">UX and user experience</option>
-          <option value="marketing" data-i18n="goalMarketing">Messaging and positioning</option>
-          <option value="churn" data-i18n="goalChurn">Understand churn / retention</option>
-          <option value="discovery" data-i18n="goalDiscovery">General discovery</option>
-        </select>
-      </div>
+    <div class="fg">
+      <label data-i18n="labelGoal">Research goal</label>
+      <select id="in-goal" onchange="onGoalChange(this.value)">
+        <option value="" disabled selected data-i18n="optSelect">Select an option</option>
+        <option value="product" data-i18n="goalProduct">Product / feature validation</option>
+        <option value="ux" data-i18n="goalUX">UX and user experience</option>
+        <option value="marketing" data-i18n="goalMarketing">Messaging and positioning</option>
+        <option value="churn" data-i18n="goalChurn">Understand churn / retention</option>
+        <option value="discovery" data-i18n="goalDiscovery">General discovery</option>
+      </select>
     </div>
 
     <div class="fg img-hide" id="img-upload-section">
@@ -394,7 +382,7 @@ Examples:
     </div>
 
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-      <button class="btn btn-p" onclick="generatePersonas(S.appendMode)" data-i18n="btnGenerate">✨ Generate Personas</button>
+      <button id="btn-generate" class="btn btn-p" onclick="generatePersonas(S.appendMode)" data-i18n="btnGenerate">✨ Generate Persona</button>
     </div>
   </div>
 </div>
@@ -579,14 +567,17 @@ function goRefineData(){
   const di=document.getElementById('in-data');if(di)di.value=S.data;
   const pi=document.getElementById('in-product');if(pi)pi.value=S.product;
   const gi=document.getElementById('in-goal');if(gi)gi.value=S.goal;
-  const ci=document.getElementById('in-count');if(ci)ci.value=S.count;
   nav(1);
+  const btn=document.getElementById('btn-generate');
+  if(btn){btn.setAttribute('data-i18n','btnUpdateData');btn.textContent=t('btnUpdateData');}
 }
 
 function goAddDifferentPersonas(){
   S.appendMode=true;
   const di=document.getElementById('in-data');if(di)di.value='';
   nav(1);
+  const btn=document.getElementById('btn-generate');
+  if(btn){btn.setAttribute('data-i18n','btnGenerate');btn.textContent=t('btnGenerate');}
 }
 
 // ── Navigation ─────────────────────────────────────────────────────────────
@@ -610,14 +601,13 @@ function nav(n){
 async function generatePersonas(append=false){
   const product=document.getElementById('in-product').value.trim();
   const data=document.getElementById('in-data').value.trim();
-  const count=parseInt(document.getElementById('in-count').value);
+  const count=1;
   const goal=document.getElementById('in-goal').value;
   const diversity=document.getElementById('in-diversity').checked;
   if(!product&&!data){alert('Please fill in at least the "Product / Service" field or the user data.');return}
-  if(!count||isNaN(count)){alert('Please select how many personas to generate.');return}
   if(!goal){alert('Please select a Research Goal before generating personas.');return}
   S.data=data;
-  if(!append){S.product=product;S.count=count;S.goal=goal;}
+  if(!append){S.product=product;S.goal=goal;}
   const existingPersonas=append?S.personas:[];
   const startIndex=existingPersonas.length;
   const personas=[...existingPersonas];
@@ -695,7 +685,10 @@ IMPORTANT: Return ONLY the JSON object, nothing else. No explanation, no markdow
       return;
     }
   }
-  S.personas=personas;S.appendMode=false;unlockAll();renderPersonasGrid();
+  S.personas=personas;S.appendMode=false;
+  const btnG=document.getElementById('btn-generate');
+  if(btnG){btnG.setAttribute('data-i18n','btnGenerate');btnG.textContent=t('btnGenerate');}
+  unlockAll();renderPersonasGrid();
   nav(2);hideLoad();autoSave();
 }
 
@@ -1269,7 +1262,6 @@ function resumeSession(data){
   S.synthesis=session.synthesis||null;
   const pi=document.getElementById('in-product');if(pi)pi.value=S.product;
   const gi=document.getElementById('in-goal');if(gi)gi.value=S.goal;
-  const ci=document.getElementById('in-count');if(ci)ci.value=S.count;
   hideHomePage();
   if(S.personas.length>0){
     unlockAll();
@@ -1388,7 +1380,7 @@ const STR = {
     dataTitle:'📊 Context Data',
     dataAlert:'💡 Examples: Mixpanel exports, HubSpot segments, support transcripts, NPS results, user demographics, qualitative feedback, app store reviews.',
     dataSub:'Paste CRM data, Analytics exports, feedback, or describe your user segments. The richer the context, the more accurate the personas.',
-    btnGenerate:'✨ Generate Personas', btnAddMore:'+ Add More Personas',
+    btnGenerate:'✨ Generate Persona', btnAddMore:'+ Add More Personas', btnUpdateData:'↺ Update Data',
     personasTitle:'👥 Generated Personas',
     personasSub:'Click a persona to see full details. Use the button to start interviews.',
     btnRefineData:'← Refine Data', btnAddDifferent:'+ Add Different Personas', btnStartInterviews:'Start Interviews →',
@@ -1420,7 +1412,7 @@ const STR = {
     dataTitle:'📊 Dados de Contexto',
     dataAlert:'💡 Exemplos: exports do Mixpanel, segmentos do HubSpot, transcrições de suporte, resultados de NPS, dados demográficos, feedbacks qualitativos.',
     dataSub:'Cole dados de CRM, Analytics, feedbacks, ou descreva seus segmentos de usuários. Quanto mais rico o contexto, mais precisas serão as personas.',
-    btnGenerate:'✨ Gerar Personas', btnAddMore:'+ Adicionar Mais Personas',
+    btnGenerate:'✨ Gerar Persona', btnAddMore:'+ Adicionar Mais Personas', btnUpdateData:'↺ Atualizar Dados',
     personasTitle:'👥 Personas Geradas',
     personasSub:'Clique em uma persona para ver detalhes. Use o botão para iniciar as entrevistas.',
     btnRefineData:'← Refinar Dados', btnAddDifferent:'+ Adicionar Personas Diferentes', btnStartInterviews:'Iniciar Entrevistas →',
