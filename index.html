@@ -613,6 +613,16 @@ function collectUserData(){
 }
 
 // ── Navigation helpers ─────────────────────────────────────────────────────
+// Single source of truth for the generate button label. Derived from state,
+// never assigned by hand, so it cannot go stale on any path into step 1.
+function updateGenerateButton(){
+  const btn=document.getElementById('btn-generate');
+  if(!btn)return;
+  const key=S.refinePersonaId?'btnUpdateData':'btnGenerate';
+  btn.setAttribute('data-i18n',key);
+  btn.textContent=t(key);
+}
+
 function goRefineData(personaId){
   S.appendMode=false;
   S.refinePersonaId=personaId||null;
@@ -620,8 +630,6 @@ function goRefineData(personaId){
   const pi=document.getElementById('in-product');if(pi)pi.value=S.product;
   const gi=document.getElementById('in-goal');if(gi)gi.value=S.goal;
   nav(1,true);
-  const btn=document.getElementById('btn-generate');
-  if(btn){btn.setAttribute('data-i18n','btnUpdateData');btn.textContent=t('btnUpdateData');}
 }
 
 function goAddDifferentPersonas(){
@@ -629,8 +637,6 @@ function goAddDifferentPersonas(){
   S.refinePersonaId=null;
   setUserFields(null);
   nav(1,true);
-  const btn=document.getElementById('btn-generate');
-  if(btn){btn.setAttribute('data-i18n','btnGenerate');btn.textContent=t('btnGenerate');}
 }
 
 // ── Navigation ─────────────────────────────────────────────────────────────
@@ -650,6 +656,7 @@ function nav(n,force=false){
     }
     else if(S.personas.length===0)s.classList.add('locked');
   });
+  if(n===1)updateGenerateButton();
   if(n===3)renderInterviewStep();
   if(n===4)renderSynthesisStep();
 }
@@ -716,6 +723,8 @@ NAME RULES (only if name not provided): Use a name matching the cultural/nationa
 
 DIVERSITY (only for fields NOT constrained by the user data): Vary age, location, and income significantly from existing personas. Never override an explicit constraint (e.g. if data says 'all users are female', keep all personas female).
 
+TECHNOLOGY: Do NOT infer, assign, or mention any technology-proficiency trait unless the user data explicitly discusses technology. This applies to every field, including tags, segment, behaviors, background and quote. Never emit labels such as "low-tech", "tech-savvy", "digital native", "low-tech-adoption" or similar when technology is not part of the provided data. This research may have nothing to do with technology.
+
 CONFIDENCE SCORING — be strict:
 - "high": explicitly stated in the user data
 - "medium": reasonably inferred from context or known patterns
@@ -750,8 +759,7 @@ IMPORTANT: Return ONLY the JSON object, nothing else. No explanation, no markdow
   }
   S.appendMode=false;
   S.selId=null;
-  const btnG=document.getElementById('btn-generate');
-  if(btnG){btnG.setAttribute('data-i18n','btnGenerate');btnG.textContent=t('btnGenerate');}
+  updateGenerateButton();
   unlockAll();renderPersonasGrid();
   const pd=document.getElementById('persona-detail');if(pd)pd.innerHTML='';
   nav(2);hideLoad();autoSave();
@@ -1341,6 +1349,7 @@ function resumeSession(data){
   S.personas=session.personas||[];
   S.interviews=session.interviews||{};
   S.synthesis=session.synthesis||null;
+  S.refinePersonaId=null;S.appendMode=false;S.selId=null;
   S.data=session.data||'';
   // Sessions saved before structured fields existed only have the raw text:
   // put it in the free-text area so nothing is lost.
@@ -1367,6 +1376,7 @@ function startNewSession(){
   S.sessionId='session_'+Date.now();
   S.step=1;S.product='';S.data='';S.fields=null;S.goal='';S.count=3;
   S.personas=[];S.selId=null;S.activeId=null;S.interviews={};S.synthesis=null;
+  S.refinePersonaId=null;S.appendMode=false;
   const pi=document.getElementById('in-product');if(pi)pi.value='';
   setUserFields(null);
   const gi=document.getElementById('in-goal');if(gi)gi.value='';
