@@ -584,11 +584,15 @@ Goals and motivations:
 Current pain points and frustrations:`;
 }
 
-// True only if the textarea still holds an untouched template (either language)
+// True if the textarea holds only empty "Label:" lines (any template version, any language).
+// Anything the user actually typed makes this false, so their data is never overwritten.
 function isPristineTemplate(v){
   const s=(v||'').trim();
   if(!s)return true;
-  return s===getDataTemplate('PT').trim()||s===getDataTemplate('EN').trim();
+  return s.split('\n').every(function(line){
+    const l=line.trim();
+    return l===''||/^[^:]{1,60}:$/.test(l);
+  });
 }
 
 // ── Navigation helpers ─────────────────────────────────────────────────────
