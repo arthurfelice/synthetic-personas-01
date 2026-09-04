@@ -30,7 +30,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--sans);background:var(--bg);color:var(--text-dark);min-height:100vh;font-size:14px}
-.header{background:var(--bg);border-bottom:1px solid var(--line);padding:0 32px;display:flex;align-items:center;gap:20px;height:64px;position:sticky;top:0;z-index:50}
+.header{background:var(--bg);border-bottom:1px solid var(--line);padding:0 40px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;height:76px;position:sticky;top:0;z-index:50}
 .logo{font-weight:700;font-family:var(--mono);font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dark)}
 .logo span{color:var(--accent)}
 .logo em{color:var(--text-2);font-style:normal;font-weight:400}
@@ -44,7 +44,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text-dark);min-hei
 .sn{width:20px;height:20px;border-radius:50%;background:transparent;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;transition:all 0.2s}
 .sl{font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dark)}
 .sep{color:var(--border);padding:0 4px;font-size:14px;user-select:none}
-.main{max-width:880px;margin:0 auto;padding:32px 24px 72px}
+.main{max-width:880px;margin:0 auto;padding:32px 24px 100px}
 .card{background:var(--surface);border:1px solid var(--line);padding:28px;box-shadow:none}
 .card-title{font-size:16px;font-weight:700;letter-spacing:0.01em;margin-bottom:4px}
 .card-sub{font-size:12px;color:var(--text-2);margin-bottom:22px;line-height:1.6}
@@ -164,6 +164,11 @@ textarea:focus,input:focus,select:focus{border-color:var(--accent);box-shadow:in
 .img-thumb img{width:72px;height:72px;object-fit:cover;border:1px solid var(--border)}
 .img-thumb .rm{position:absolute;top:-5px;right:-5px;width:18px;height:18px;border-radius:50%;background:var(--text-dark);color:var(--bg);font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:700;border:none;line-height:1}
 .img-hide{display:none}
+
+.brand-logo{height:30px;width:auto;display:block;}
+.dell-img{height:20px;width:auto;display:block;filter:brightness(0) invert(1)}
+.eldorado-img{height:34px;width:auto;display:block;}
+.hdr-right-sp{justify-self:end;display:flex;align-items:center;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
 <style>
@@ -183,8 +188,8 @@ textarea:focus,input:focus,select:focus{border-color:var(--accent);box-shadow:in
 /* Project home page */
 #pg-home{display:none;background:var(--bg)}
 #pg-home.on{display:block;position:fixed;inset:0;overflow-y:auto;z-index:100}
-.home-bar{background:var(--bg);border-bottom:1px solid var(--line);padding:0 32px;height:54px;display:flex;align-items:center;gap:16px}
-.home-bar-title{font-size:13px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:var(--text-dark)}
+.home-bar{background:var(--bg);border-bottom:1px solid var(--line);padding:0 40px;height:76px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center}
+.home-bar-title{font-size:13px;font-weight:700;font-family:var(--mono);letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dark);text-align:center}
 .home-bar-logo{margin-right:auto}
 .home-main{max-width:1280px;margin:0 auto;padding:40px 32px 72px}
 .home-section-label{font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:0.12em;text-transform:uppercase;color:var(--text-2);margin-bottom:20px}
@@ -261,9 +266,9 @@ function checkPw(){
 <!-- Project Home -->
 <div id="pg-home">
   <div class="home-bar">
-    <div style="display:flex;align-items:center;gap:12px"><img src="/workability-logo.png" alt="Workability Lab" style="height:28px"><div style="width:1px;height:28px;background:var(--border)"></div><span style="font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-2)">Synthetic Personas</span></div>
+    <div><img src="/workability-logo.png" alt="Workability Lab" class="brand-logo"></div>
     <div class="home-bar-title">Synthetic Personas</div>
-    <button class="btn btn-p" onclick="startNewSession()" style="font-size:10px;padding:7px 14px">+ New Project</button>
+    <div style="justify-self:end"><button class="btn btn-p" onclick="startNewSession()" style="font-size:10px;padding:7px 14px">+ New Project</button></div>
   </div>
   <div class="home-main">
     <div class="home-section-label">Your projects</div>
@@ -284,12 +289,7 @@ function checkPw(){
 </div>
 
 <div class="header">
-  <div style="display:flex;align-items:center;gap:12px;flex-shrink:0">
-    <img src="/workability-logo.png" alt="Workability Lab" style="height:28px">
-    <div style="width:1px;height:28px;background:var(--border)"></div>
-    <span style="font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-2)">Synthetic Personas</span>
-  </div>
-  <button class="btn-sessions" onclick="showHomePage()">← Projects</button>
+  <div><img src="/workability-logo.png" alt="Workability Lab" class="brand-logo"></div>
   <div class="steps">
     <div class="step active" data-s="1" onclick="nav(1)"><div class="sn">1</div><div class="sl">Data</div></div>
     <div class="sep">›</div>
@@ -299,6 +299,7 @@ function checkPw(){
     <div class="sep">›</div>
     <div class="step locked" data-s="4" onclick="nav(4)"><div class="sn">4</div><div class="sl">Synthesis</div></div>
   </div>
+  <div class="hdr-right-sp"><button class="btn-sessions" onclick="showHomePage()">← Projects</button></div>
 </div>
 
 <div class="main">
@@ -430,14 +431,16 @@ Examples:
 
 </div><!-- /main -->
 
-<footer id="app-footer" style="position:fixed;bottom:0;left:0;right:0;height:56px;background:#0b0b0b;display:flex;align-items:center;justify-content:space-between;padding:0 32px;z-index:200">
-  <span style="font-size:11px;font-family:var(--mono);letter-spacing:0.04em;color:#ffffff">Copyright &copy; Dell Inc. All Rights Reserved.</span>
-  <span id="footer-session" style="font-size:11px;font-family:var(--mono);letter-spacing:0.08em;text-transform:uppercase;color:#ffffff;display:none"></span>
-  <span style="font-size:11px;font-family:var(--mono);letter-spacing:0.08em;color:#ffffff;position:absolute;left:50%;transform:translateX(-50%)">Internal Use Confidential</span>
-  <div style="display:flex;align-items:center;gap:16px">
-    <img src="/dell-logo.png" alt="Dell Technologies" style="height:20px;filter:brightness(0) invert(1)">
-    <img src="/eldorado-neg.png" alt="Eldorado" style="height:24px">
+<footer id="app-footer" style="position:fixed;bottom:0;left:0;right:0;background:#0b0b0b;z-index:200">
+  <div style="max-width:100%;margin:0 auto;padding:22px 40px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:24px">
+    <div style="font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:#fff">Copyright &copy; Dell Inc. All Rights Reserved.</div>
+    <div style="font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-align:center;color:#fff">Internal Use Confidential</div>
+    <div style="display:flex;align-items:center;justify-content:flex-end;gap:28px">
+      <img src="/dell-logo.png" alt="Dell Technologies" class="dell-img">
+      <img src="/eldorado-neg.png" alt="Eldorado" class="eldorado-img">
+    </div>
   </div>
+  <span id="footer-session" style="display:none"></span>
 </footer>
 
 <script>
