@@ -52,6 +52,11 @@ label{display:block;font-size:10px;font-weight:700;font-family:var(--mono);color
 textarea,input,select{width:100%;padding:9px 12px;border:1px solid var(--border);font-size:13px;font-family:inherit;background:var(--bg);color:var(--text-dark);outline:none;transition:border-color 0.12s;resize:vertical;line-height:1.5;border-radius:0}
 textarea:focus,input:focus,select:focus{border-color:var(--accent);box-shadow:inset 2px 0 0 var(--accent)}
 .fg{margin-bottom:16px}
+.df-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;margin-bottom:14px}
+.df{margin-bottom:12px}
+.df label{margin-bottom:4px}
+.df-sep{border:0;border-top:1px solid var(--border);margin:16px 0 14px}
+@media(max-width:640px){.df-grid{grid-template-columns:1fr}}
 .hint{font-size:11px;color:var(--text-2);margin-top:4px}
 .row{display:flex;gap:12px;align-items:flex-start}
 .f1{flex:1}
@@ -335,18 +340,8 @@ function checkPw(){
     </div>
     <div class="fg">
       <label data-i18n="labelData">Customer / User Data</label>
-      <textarea id="in-data" rows="22" data-i18n-placeholder="phData" placeholder="Paste raw data, feedback, segment descriptions, support logs, survey results...
-
-Examples:
-• Segment A: Engineering managers, 35-50 yrs, main pain: team velocity vs. burnout
-• Segment B: Individual contributors, 25-35 yrs, hybrid work, want AI help without losing control
-• Recurring feedback: 'hard to trust AI suggestions', 'want to understand what it changed'
-• NPS: promoters mention 'saves hours of boilerplate', detractors cite 'unpredictable behavior'
-• 60% of churn happens in the first 30 days
-• CRM data: avg deal $280/mo, sales cycle 14 days, CAC $320
-
-💡 Tip: to constrain all personas, state it explicitly — e.g. 'All users are female, aged 25-30' or 'B2B only, enterprise segment'."></textarea>
-      <div class="hint" data-i18n="hintData">Free text, tables, bullets — no need to structure it.</div>
+      <div id="data-fields"></div>
+      <div class="hint" data-i18n="hintData">Leave blank whatever you don't know — empty fields are not sent to the model.</div>
     </div>
     <div class="fg">
       <label data-i18n="labelGoal">Research goal</label>
@@ -439,7 +434,7 @@ Examples:
 
 <script>
 // ── State ──────────────────────────────────────────────────────────────────
-const S={step:1,product:'',data:'',goal:'product',count:3,personas:[],selId:null,activeId:null,interviews:{},synthesis:null,appendMode:false,refinePersonaId:null};
+const S={step:1,product:'',data:'',fields:null,goal:'product',count:3,personas:[],selId:null,activeId:null,interviews:{},synthesis:null,appendMode:false,refinePersonaId:null};
 const COLORS=['#4f46e5','#7c3aed','#0891b2','#059669','#d97706','#dc2626'];
 const AVATARS=['👩‍💼','👨‍💻','👩‍🔬','👨‍🎨','👩‍🏫','👨‍🏢','👩‍💻','👨‍🍳'];
 
@@ -551,55 +546,77 @@ function normalizePersona(p,i){
   };
 }
 
-// ── Data template ──────────────────────────────────────────────────────────
-function getDataTemplate(lang){
-  const lg=lang||L;
-  if(lg==='PT'){
-    return `Nome:
-Idade:
-Cidade/Estado/País:
-Profissão/Cargo:
-Renda mensal:
-Estado civil:
-Escolaridade:
+// ── Structured data fields ─────────────────────────────────────────────────
+// Labels are rendered as real <label> elements, so they can never be deleted.
+// `en` is the canonical label sent to the model, regardless of UI language.
+const DATA_FIELDS=[
+  {k:'name',      i18n:'fName',      en:'Name',                     type:'input'},
+  {k:'age',       i18n:'fAge',       en:'Age',                      type:'input'},
+  {k:'location',  i18n:'fLocation',  en:'City/State/Country',       type:'input'},
+  {k:'occupation',i18n:'fOccupation',en:'Occupation/Role',          type:'input'},
+  {k:'income',    i18n:'fIncome',    en:'Monthly income',           type:'input'},
+  {k:'marital',   i18n:'fMarital',   en:'Marital status',           type:'input'},
+  {k:'education', i18n:'fEducation', en:'Education',                type:'input'},
+  {k:'behaviors', i18n:'fBehaviors', en:'Relevant behaviors and routine', type:'area'},
+  {k:'goals',     i18n:'fGoals',     en:'Goals and motivations',    type:'area'},
+  {k:'pains',     i18n:'fPains',     en:'Current pain points and frustrations', type:'area'}
+];
 
-Comportamentos e rotina relevantes:
-
-Objetivos e motivações:
-
-Dores e frustrações atuais:`;
-  }
-  return `Name:
-Age:
-City/State/Country:
-Occupation/Role:
-Monthly income:
-Marital status:
-Education:
-
-Relevant behaviors and daily routine:
-
-Goals and motivations:
-
-Current pain points and frustrations:`;
+function renderDataFields(){
+  const el=document.getElementById('data-fields');
+  if(!el||el.dataset.ready)return;
+  const inputs=DATA_FIELDS.filter(f=>f.type==='input').map(f=>
+    `<div class="df"><label data-i18n="${f.i18n}">${f.en}</label><input type="text" id="fld-${f.k}"></div>`).join('');
+  const areas=DATA_FIELDS.filter(f=>f.type==='area').map(f=>
+    `<div class="df"><label data-i18n="${f.i18n}">${f.en}</label><textarea id="fld-${f.k}" rows="2"></textarea></div>`).join('');
+  el.innerHTML=`<div class="df-grid">${inputs}</div>${areas}<hr class="df-sep">
+    <div class="df"><label data-i18n="fExtra">Other information (optional)</label>
+    <textarea id="fld-extra" rows="6" data-i18n-placeholder="phExtra"></textarea></div>`;
+  el.dataset.ready='1';
+  applyLang();
 }
 
-// True if the textarea holds only empty "Label:" lines (any template version, any language).
-// Anything the user actually typed makes this false, so their data is never overwritten.
-function isPristineTemplate(v){
-  const s=(v||'').trim();
-  if(!s)return true;
-  return s.split('\n').every(function(line){
-    const l=line.trim();
-    return l===''||/^[^:]{1,60}:$/.test(l);
+// Read the fields into a plain object (for saving / restoring)
+function getUserFields(){
+  const o={};
+  DATA_FIELDS.forEach(function(f){
+    const el=document.getElementById('fld-'+f.k);
+    o[f.k]=el?el.value:'';
   });
+  const ex=document.getElementById('fld-extra');
+  o.extra=ex?ex.value:'';
+  return o;
+}
+
+// Write an object back into the fields. Pass null/undefined to clear everything.
+function setUserFields(o){
+  DATA_FIELDS.forEach(function(f){
+    const el=document.getElementById('fld-'+f.k);
+    if(el)el.value=(o&&o[f.k])||'';
+  });
+  const ex=document.getElementById('fld-extra');
+  if(ex)ex.value=(o&&o.extra)||'';
+}
+
+// Serialize to the text actually sent to the model. Empty fields are omitted.
+function collectUserData(){
+  const lines=[];
+  DATA_FIELDS.forEach(function(f){
+    const el=document.getElementById('fld-'+f.k);
+    const v=el?el.value.trim():'';
+    if(v)lines.push(f.en+': '+v);
+  });
+  const ex=document.getElementById('fld-extra');
+  const exv=ex?ex.value.trim():'';
+  if(exv)lines.push('\nAdditional context:\n'+exv);
+  return lines.join('\n');
 }
 
 // ── Navigation helpers ─────────────────────────────────────────────────────
 function goRefineData(personaId){
   S.appendMode=false;
   S.refinePersonaId=personaId||null;
-  const di=document.getElementById('in-data');if(di)di.value=S.data;
+  setUserFields(S.fields);
   const pi=document.getElementById('in-product');if(pi)pi.value=S.product;
   const gi=document.getElementById('in-goal');if(gi)gi.value=S.goal;
   nav(1,true);
@@ -610,7 +627,7 @@ function goRefineData(personaId){
 function goAddDifferentPersonas(){
   S.appendMode=true;
   S.refinePersonaId=null;
-  const di=document.getElementById('in-data');if(di)di.value=getDataTemplate();
+  setUserFields(null);
   nav(1,true);
   const btn=document.getElementById('btn-generate');
   if(btn){btn.setAttribute('data-i18n','btnGenerate');btn.textContent=t('btnGenerate');}
@@ -640,12 +657,13 @@ function nav(n,force=false){
 // ── STEP 1: Generate Personas ──────────────────────────────────────────────
 async function generatePersonas(append=false){
   const product=document.getElementById('in-product').value.trim();
-  const data=document.getElementById('in-data').value.trim();
+  const data=collectUserData().trim();
   const count=1;
   const goal=document.getElementById('in-goal').value;
   if(!product&&!data){alert('Please fill in at least the "Product / Service" field or the user data.');return}
   if(!goal){alert('Please select a Research Goal before generating personas.');return}
   S.data=data;
+  S.fields=getUserFields();
   if(!append){S.product=product;S.goal=goal;}
   // In refine mode, keep all other personas as context (exclude the one being replaced)
   const existingPersonas=append?S.personas:(S.refinePersonaId?S.personas.filter(p=>p.id!==S.refinePersonaId):[]);
@@ -1303,6 +1321,7 @@ function autoSave(){
     id:S.sessionId,
     name:S.product||'Untitled Session',
     product:S.product,goal:S.goal,count:S.count,
+    data:S.data,fields:S.fields,
     personas:S.personas,interviews:S.interviews,synthesis:S.synthesis,
     updatedAt:now,
     createdAt:idx>=0?sessions[idx].createdAt:now
@@ -1322,6 +1341,11 @@ function resumeSession(data){
   S.personas=session.personas||[];
   S.interviews=session.interviews||{};
   S.synthesis=session.synthesis||null;
+  S.data=session.data||'';
+  // Sessions saved before structured fields existed only have the raw text:
+  // put it in the free-text area so nothing is lost.
+  S.fields=session.fields||(S.data?{extra:S.data}:null);
+  setUserFields(S.fields);
   const pi=document.getElementById('in-product');if(pi)pi.value=S.product;
   const gi=document.getElementById('in-goal');if(gi)gi.value=S.goal;
   hideHomePage();
@@ -1341,10 +1365,10 @@ function resumeSessionById(id){
 
 function startNewSession(){
   S.sessionId='session_'+Date.now();
-  S.step=1;S.product='';S.data='';S.goal='';S.count=3;
+  S.step=1;S.product='';S.data='';S.fields=null;S.goal='';S.count=3;
   S.personas=[];S.selId=null;S.activeId=null;S.interviews={};S.synthesis=null;
   const pi=document.getElementById('in-product');if(pi)pi.value='';
-  const di=document.getElementById('in-data');if(di)di.value=getDataTemplate();
+  setUserFields(null);
   const gi=document.getElementById('in-goal');if(gi)gi.value='';
   hideHomePage();
   nav(1);
@@ -1428,6 +1452,7 @@ function hideHomePage(){
 S.sessionId='session_'+Date.now();
 
 window.afterAuth=function(){
+  renderDataFields();
   applyLang();
   showHomePage();
 };
@@ -1457,7 +1482,12 @@ const STR = {
     phData:'Paste raw data, feedback, segment descriptions, support logs, survey results...',
     labelProduct:'Product / Service', labelData:'Customer / User Data',
     labelCount:'How many personas?', labelGoal:'Research goal',
-    hintData:'Free text, tables, bullets — no need to structure it.',
+    hintData:'Leave blank whatever you don\'t know — empty fields are not sent to the model.',
+    fName:'Name', fAge:'Age', fLocation:'City / State / Country', fOccupation:'Occupation / Role',
+    fIncome:'Monthly income', fMarital:'Marital status', fEducation:'Education',
+    fBehaviors:'Relevant behaviors and routine', fGoals:'Goals and motivations',
+    fPains:'Current pain points and frustrations', fExtra:'Other information (optional)',
+    phExtra:'Paste CRM exports, interview transcripts, NPS results, tables, or anything else that doesn\'t fit the fields above.',
     phProduct:'e.g. AI coding assistant for software engineers at large tech companies',
     labelDiversity:'<strong>Maximize diversity</strong> — force contrasting profiles in age, income, behavior and context',
     optSelect:'Select an option', opt1p:'1 persona', opt2p:'2 personas', opt3p:'3 personas', opt4p:'4 personas',
@@ -1489,7 +1519,12 @@ const STR = {
     phData:'Cole dados brutos, feedbacks, descrições de segmentos, logs de suporte, resultados de pesquisa...',
     labelProduct:'Produto / Serviço', labelData:'Dados dos Clientes / Usuários',
     labelCount:'Quantas personas?', labelGoal:'Objetivo da pesquisa',
-    hintData:'Texto livre, tabelas, tópicos — sem necessidade de estruturar.',
+    hintData:'Deixe em branco o que você não souber — campos vazios não são enviados ao modelo.',
+    fName:'Nome', fAge:'Idade', fLocation:'Cidade / Estado / País', fOccupation:'Profissão / Cargo',
+    fIncome:'Renda mensal', fMarital:'Estado civil', fEducation:'Escolaridade',
+    fBehaviors:'Comportamentos e rotina relevantes', fGoals:'Objetivos e motivações',
+    fPains:'Dores e frustrações atuais', fExtra:'Outras informações (opcional)',
+    phExtra:'Cole exports de CRM, transcrições de entrevistas, resultados de NPS, tabelas, ou qualquer coisa que não caiba nos campos acima.',
     phProduct:'ex: Assistente de IA para engenheiros de software em grandes empresas de tecnologia',
     labelDiversity:'<strong>Maximizar diversidade</strong> — perfis contrastantes em idade, renda, comportamento e contexto',
     optSelect:'Selecione uma opção', opt1p:'1 persona', opt2p:'2 personas', opt3p:'3 personas', opt4p:'4 personas',
@@ -1514,9 +1549,6 @@ function applyLang(){
   if(btnSyn && btnSyn.dataset.state) btnSyn.textContent=t(btnSyn.dataset.state==='update'?'btnUpdateSynthesis':'btnAnalyze');
   // Refresh new-card labels
   document.querySelectorAll('.new-card-label').forEach(el=>el.textContent=t('newProject'));
-  // Re-translate the data template, but only if the user hasn't typed into it
-  const di=document.getElementById('in-data');
-  if(di&&isPristineTemplate(di.value))di.value=getDataTemplate();
 }
 
 // If already authenticated (returning user), run afterAuth after page load
