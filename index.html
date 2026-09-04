@@ -317,7 +317,7 @@ function checkPw(){
     <div class="sep">›</div>
     <div class="step locked" data-s="4" onclick="nav(4)"><div class="sn">4</div><div class="sl" data-i18n="s4">Synthesis</div></div>
   </div>
-  <div class="hdr-right-sp"></div>
+  <div class="hdr-right-sp"><div style="display:flex;align-items:center;gap:3px"><span class="lang-opt" data-lang="EN" onclick="setLang('EN')">EN</span><span class="lang-sep">|</span><span class="lang-opt" data-lang="PT" onclick="setLang('PT')">PT-BR</span></div></div>
   </div>
 </div>
 
@@ -330,11 +330,11 @@ function checkPw(){
     <div class="card-sub" data-i18n="dataSub">Paste CRM data, Analytics exports, feedback, or describe your user segments. The richer the context, the more accurate the personas.</div>
     <div class="alert alert-info" data-i18n="dataAlert">💡 Examples: Mixpanel exports, HubSpot segments, support transcripts, NPS results, user demographics, qualitative feedback, app store reviews.</div>
     <div class="fg">
-      <label>Product / Service</label>
-      <input type="text" id="in-product" placeholder="e.g. AI coding assistant for software engineers at large tech companies" />
+      <label data-i18n="labelProduct">Product / Service</label>
+      <input type="text" id="in-product" data-i18n-placeholder="phProduct" placeholder="e.g. AI coding assistant for software engineers at large tech companies" />
     </div>
     <div class="fg">
-      <label>Customer / User Data</label>
+      <label data-i18n="labelData">Customer / User Data</label>
       <textarea id="in-data" rows="22" data-i18n-placeholder="phData" placeholder="Paste raw data, feedback, segment descriptions, support logs, survey results...
 
 Examples:
@@ -346,28 +346,28 @@ Examples:
 • CRM data: avg deal $280/mo, sales cycle 14 days, CAC $320
 
 💡 Tip: to constrain all personas, state it explicitly — e.g. 'All users are female, aged 25-30' or 'B2B only, enterprise segment'."></textarea>
-      <div class="hint">Free text, tables, bullets — no need to structure it.</div>
+      <div class="hint" data-i18n="hintData">Free text, tables, bullets — no need to structure it.</div>
     </div>
     <div class="row">
       <div class="f1 fg">
-        <label>How many personas?</label>
+        <label data-i18n="labelCount">How many personas?</label>
         <select id="in-count">
-          <option value="" disabled selected>Select an option</option>
-          <option value="1">1 persona</option>
-          <option value="2">2 personas</option>
-          <option value="3">3 personas</option>
-          <option value="4">4 personas</option>
+          <option value="" disabled selected data-i18n="optSelect">Select an option</option>
+          <option value="1" data-i18n="opt1p">1 persona</option>
+          <option value="2" data-i18n="opt2p">2 personas</option>
+          <option value="3" data-i18n="opt3p">3 personas</option>
+          <option value="4" data-i18n="opt4p">4 personas</option>
         </select>
       </div>
       <div class="f1 fg">
-        <label>Research goal</label>
+        <label data-i18n="labelGoal">Research goal</label>
         <select id="in-goal" onchange="onGoalChange(this.value)">
-          <option value="" disabled selected>Select an option</option>
-          <option value="product">Product / feature validation</option>
-          <option value="ux">UX and user experience</option>
-          <option value="marketing">Messaging and positioning</option>
-          <option value="churn">Understand churn / retention</option>
-          <option value="discovery">General discovery</option>
+          <option value="" disabled selected data-i18n="optSelect">Select an option</option>
+          <option value="product" data-i18n="goalProduct">Product / feature validation</option>
+          <option value="ux" data-i18n="goalUX">UX and user experience</option>
+          <option value="marketing" data-i18n="goalMarketing">Messaging and positioning</option>
+          <option value="churn" data-i18n="goalChurn">Understand churn / retention</option>
+          <option value="discovery" data-i18n="goalDiscovery">General discovery</option>
         </select>
       </div>
     </div>
@@ -389,7 +389,7 @@ Examples:
     <div class="fg" style="margin-top:4px">
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;font-size:12px;font-weight:500;letter-spacing:0">
         <input type="checkbox" id="in-diversity" style="width:auto;accent-color:var(--accent)">
-        <span><strong>Maximize diversity</strong> — force contrasting profiles in age, income, behavior and context</span>
+        <span data-i18n-html="labelDiversity"><strong>Maximize diversity</strong> — force contrasting profiles in age, income, behavior and context</span>
       </label>
     </div>
 
@@ -766,7 +766,7 @@ function renderPersonasGrid(){
       </div>
       <div class="p-quote">"${p.quote}"</div>
       ${(S.interviews[p.id]||[]).filter(m=>m.role==='user').length>0
-        ?`<div class="ib">✓ ${S.interviews[p.id].filter(m=>m.role==='user').length} questions asked</div>`:''}
+        ?`<div class="ib">✓ ${S.interviews[p.id].filter(m=>m.role==='user').length} ${t('questionsAsked')}</div>`:''}
     </div>`).join('')}</div>`;
   // Attach click listeners individually after DOM is built
   S.personas.forEach(function(p){
@@ -1411,6 +1411,15 @@ const STR = {
     btnAnalyze:'🔬 Analyze & Synthesize', btnUpdateSynthesis:'🔄 Update Synthesis',
     langToggle:'PT-BR',
     phData:'Paste raw data, feedback, segment descriptions, support logs, survey results...',
+    labelProduct:'Product / Service', labelData:'Customer / User Data',
+    labelCount:'How many personas?', labelGoal:'Research goal',
+    hintData:'Free text, tables, bullets — no need to structure it.',
+    phProduct:'e.g. AI coding assistant for software engineers at large tech companies',
+    labelDiversity:'<strong>Maximize diversity</strong> — force contrasting profiles in age, income, behavior and context',
+    optSelect:'Select an option', opt1p:'1 persona', opt2p:'2 personas', opt3p:'3 personas', opt4p:'4 personas',
+    goalProduct:'Product / feature validation', goalUX:'UX and user experience',
+    goalMarketing:'Messaging and positioning', goalChurn:'Understand churn / retention',
+    goalDiscovery:'General discovery', questionsAsked:'questions asked',
     langInstructPersona:'Write all text fields (background, jtbd, goals, pains, behaviors, quote, tags, segment) in English.',
     langInstructInterview:'You MUST respond entirely in English.',
     langInstructSynthesis:'Write the entire synthesis report in English, including all section headings.'
@@ -1434,6 +1443,15 @@ const STR = {
     btnAnalyze:'🔬 Analisar e Sintetizar', btnUpdateSynthesis:'🔄 Atualizar Síntese',
     langToggle:'EN',
     phData:'Cole dados brutos, feedbacks, descrições de segmentos, logs de suporte, resultados de pesquisa...',
+    labelProduct:'Produto / Serviço', labelData:'Dados dos Clientes / Usuários',
+    labelCount:'Quantas personas?', labelGoal:'Objetivo da pesquisa',
+    hintData:'Texto livre, tabelas, tópicos — sem necessidade de estruturar.',
+    phProduct:'ex: Assistente de IA para engenheiros de software em grandes empresas de tecnologia',
+    labelDiversity:'<strong>Maximizar diversidade</strong> — perfis contrastantes em idade, renda, comportamento e contexto',
+    optSelect:'Selecione uma opção', opt1p:'1 persona', opt2p:'2 personas', opt3p:'3 personas', opt4p:'4 personas',
+    goalProduct:'Validação de produto / funcionalidade', goalUX:'UX e experiência do usuário',
+    goalMarketing:'Mensagem e posicionamento', goalChurn:'Entender churn / retenção',
+    goalDiscovery:'Descoberta geral', questionsAsked:'perguntas realizadas',
     langInstructPersona:'Escreva todos os campos de texto (background, jtbd, goals, pains, behaviors, quote, tags, segment) em português brasileiro.',
     langInstructInterview:'Você DEVE responder inteiramente em português brasileiro.',
     langInstructSynthesis:'Escreva todo o relatório de síntese em português brasileiro, incluindo todos os títulos de seção.'
@@ -1445,6 +1463,8 @@ function applyLang(){
   document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent=t(el.getAttribute('data-i18n')); });
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{ el.placeholder=t(el.getAttribute('data-i18n-placeholder')); });
   document.querySelectorAll('.lang-opt[data-lang]').forEach(el=>{ el.classList.toggle('active', el.dataset.lang===L); });
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>{ el.innerHTML=t(el.getAttribute('data-i18n-html')); });
+  document.querySelectorAll('option[data-i18n]').forEach(el=>{ el.textContent=t(el.getAttribute('data-i18n')); });
   // Update dynamic buttons
   const btnSyn=document.getElementById('btn-syn');
   if(btnSyn && btnSyn.dataset.state) btnSyn.textContent=t(btnSyn.dataset.state==='update'?'btnUpdateSynthesis':'btnAnalyze');
