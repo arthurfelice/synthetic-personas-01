@@ -536,7 +536,6 @@ function normalizePersona(p,i){
     location:p.location||p.Location||p.city||'—',
     occupation:p.occupation||p.Occupation||p.job||p.role||'—',
     income:p.income||p.Income||p.salary||'—',
-    techLevel:p.techLevel||p.tech_level||p.technical_level||'—',
     segment:p.segment||p.Segment||p.type||'—',
     background:p.background||p.Background||p.bio||'—',
     jtbd:p.jtbd||p.job_to_be_done||p.jobToBeDone||'—',
@@ -562,15 +561,12 @@ Profissão/Cargo:
 Renda mensal:
 Estado civil:
 Escolaridade:
-Nível de tecnologia (iniciante / intermediário / avançado):
 
 Comportamentos e rotina relevantes:
 
 Objetivos e motivações:
 
-Dores e frustrações atuais:
-
-Como resolve esse problema hoje (sem o produto):`;
+Dores e frustrações atuais:`;
   }
   return `Name:
 Age:
@@ -579,15 +575,12 @@ Occupation/Role:
 Monthly income:
 Marital status:
 Education:
-Tech level (beginner / intermediate / advanced):
 
 Relevant behaviors and daily routine:
 
 Goals and motivations:
 
-Current pain points and frustrations:
-
-How they solve this problem today (without the product):`;
+Current pain points and frustrations:`;
 }
 
 // ── Navigation helpers ─────────────────────────────────────────────────────
@@ -691,7 +684,7 @@ IF no unused described profile is found (all have been used, or data contains no
 
 NAME RULES (only if name not provided): Use a name matching the cultural/national background implied by the data. Every persona MUST have a completely unique first AND last name. Avoid generic names.${usedNames?`\nNAMES ALREADY USED (do NOT reuse): ${usedNames}`:''}
 
-DIVERSITY (only for fields NOT constrained by the user data): Vary age, location, income, and techLevel significantly from existing personas. Never override an explicit constraint (e.g. if data says 'all users are female', keep all personas female).
+DIVERSITY (only for fields NOT constrained by the user data): Vary age, location, and income significantly from existing personas. Never override an explicit constraint (e.g. if data says 'all users are female', keep all personas female).
 
 CONFIDENCE SCORING — be strict:
 - "high": explicitly stated in the user data
@@ -703,7 +696,7 @@ LANGUAGE: \${t('langInstructPersona')}
 
 IMPORTANT: Return ONLY the JSON object, nothing else. No explanation, no markdown, no code fences. Start with { and end with }
 
-{"id":"p${totalIdx+1}","name":"Full Name","age":30,"location":"City, Country","occupation":"Job Title","income":"salary range","techLevel":"Beginner|Intermediate|Advanced|Expert","segment":"Short Segment Name","background":"2 sentences","jtbd":"One sentence","goals":["goal1","goal2","goal3"],"pains":["pain1","pain2","pain3"],"behaviors":["behavior1","behavior2","behavior3"],"quote":"First-person quote","tags":["tag1","tag2","tag3"],"_confidence":{"age":"high|medium|low","location":"high|medium|low","occupation":"high|medium|low","income":"high|medium|low","techLevel":"high|medium|low","background":"high|medium|low","jtbd":"high|medium|low","goals":["high|medium|low","high|medium|low","high|medium|low"],"pains":["high|medium|low","high|medium|low","high|medium|low"],"behaviors":["high|medium|low","high|medium|low","high|medium|low"]}}`;
+{"id":"p${totalIdx+1}","name":"Full Name","age":30,"location":"City, Country","occupation":"Job Title","income":"salary range","segment":"Short Segment Name","background":"2 sentences","jtbd":"One sentence","goals":["goal1","goal2","goal3"],"pains":["pain1","pain2","pain3"],"behaviors":["behavior1","behavior2","behavior3"],"quote":"First-person quote","tags":["tag1","tag2","tag3"],"_confidence":{"age":"high|medium|low","location":"high|medium|low","occupation":"high|medium|low","income":"high|medium|low","background":"high|medium|low","jtbd":"high|medium|low","goals":["high|medium|low","high|medium|low","high|medium|low"],"pains":["high|medium|low","high|medium|low","high|medium|low"],"behaviors":["high|medium|low","high|medium|low","high|medium|low"]}}`;
     try{
       const text=await callClaude(prompt, S_imgs);
       const raw=extractJSON(text);
@@ -846,7 +839,7 @@ function selPersona(id){
           ${p.photo?`<img src="${p.photo}" class="p-photo-lg" alt="${p.name}">`:`<div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:26px">${p.avatar}</div>`}
           <div style="position:absolute;bottom:0;right:0;width:16px;height:16px;background:rgba(0,0,0,.5);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px">📷</div>
         </div>
-        <div><div class="pd-name">${p.name}</div><div class="pd-role">${p.occupation} · ${p.segment} · ${p.techLevel}</div></div>
+        <div><div class="pd-name">${p.name}</div><div class="pd-role">${p.occupation} · ${p.segment}</div></div>
         <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
           <button class="btn btn-s" style="font-size:10px;padding:5px 12px;background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);color:#fff" onclick="goRefineData('${p.id}')">${t('btnRefineData')}</button>
           <button class="btn btn-g" style="color:#fff;opacity:.8" onclick="startInterview('${p.id}')">🎙️ Interview</button>
@@ -858,7 +851,6 @@ function selPersona(id){
           <div class="di"><label>Age</label><p>${p.age} yrs${confDot((p.confidence||{}).age)}</p></div>
           <div class="di"><label>Location</label><p>${p.location}${confDot((p.confidence||{}).location)}</p></div>
           <div class="di"><label>Income</label><p>${p.income||'—'}${confDot((p.confidence||{}).income)}</p></div>
-          <div class="di"><label>Tech level</label><p>${p.techLevel||'—'}${confDot((p.confidence||{}).techLevel)}</p></div>
         </div>
         <div class="ds"><label>Background</label><p style="font-size:13px;line-height:1.65;color:var(--text-2)">${p.background}${confDot((p.confidence||{}).background)}</p></div>
         <div class="ds"><label>Job-to-be-done</label><p style="font-size:13px;line-height:1.65">${p.jtbd}${confDot((p.confidence||{}).jtbd)}</p></div>
@@ -954,7 +946,7 @@ async function askPersona(id){
 
 PROFILE:
 - Name: ${p.name} | Age: ${p.age} | Location: ${p.location}
-- Occupation: ${p.occupation} | Income: ${p.income||'not specified'} | Tech level: ${p.techLevel}
+- Occupation: ${p.occupation} | Income: ${p.income||'not specified'}
 - Segment: ${p.segment}
 - Background: ${p.background}
 - Job-to-be-done: ${p.jtbd}
