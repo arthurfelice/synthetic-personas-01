@@ -552,8 +552,9 @@ function normalizePersona(p,i){
 }
 
 // ── Data template ──────────────────────────────────────────────────────────
-function getDataTemplate(){
-  if(L==='PT'){
+function getDataTemplate(lang){
+  const lg=lang||L;
+  if(lg==='PT'){
     return `Nome:
 Idade:
 Cidade/Estado/País:
@@ -581,6 +582,13 @@ Relevant behaviors and daily routine:
 Goals and motivations:
 
 Current pain points and frustrations:`;
+}
+
+// True only if the textarea still holds an untouched template (either language)
+function isPristineTemplate(v){
+  const s=(v||'').trim();
+  if(!s)return true;
+  return s===getDataTemplate('PT').trim()||s===getDataTemplate('EN').trim();
 }
 
 // ── Navigation helpers ─────────────────────────────────────────────────────
@@ -1502,6 +1510,9 @@ function applyLang(){
   if(btnSyn && btnSyn.dataset.state) btnSyn.textContent=t(btnSyn.dataset.state==='update'?'btnUpdateSynthesis':'btnAnalyze');
   // Refresh new-card labels
   document.querySelectorAll('.new-card-label').forEach(el=>el.textContent=t('newProject'));
+  // Re-translate the data template, but only if the user hasn't typed into it
+  const di=document.getElementById('in-data');
+  if(di&&isPristineTemplate(di.value))di.value=getDataTemplate();
 }
 
 // If already authenticated (returning user), run afterAuth after page load
